@@ -25,6 +25,6 @@ void setup() {
 void loop() {
   for (int i = 0; i < CHAN_IN_USE; i++) {
     handleChannel(i);
-    }
-    Serial.flush();
+  }
+  Serial.flush();
 }

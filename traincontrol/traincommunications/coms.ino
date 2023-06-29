@@ -62,9 +62,11 @@ void handleChannel(int i){
       if(comss[i].available()>=(2*(MSG_LENGTH+2))) {
         while (comss[i].available()>=(2*(MSG_LENGTH+2))) {
           if (readMessage(i)){
-            writeMessageToAllBut( 4, &(comss[i].msg));
-          } else {
-            writeMessageToAllBut( 4, &(comss[i].msg));
+            writeMessageToAllBut( i, &(comss[i].msg));
+            if (handleMessage(&comss[i].msg, &outboundMSG[i])){
+              writeMessageToAllBut(999, &outboundMSG[i]);
+            }
+
           }
         }
         while (comss[i].available()){
