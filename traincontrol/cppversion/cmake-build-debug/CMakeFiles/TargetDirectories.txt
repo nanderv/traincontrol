@@ -1,0 +1,3 @@
+/home/nander/traincontrol/traincontrol/cmake-build-debug/CMakeFiles/traincommunications.dir
+/home/nander/traincontrol/traincontrol/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/nander/traincontrol/traincontrol/cmake-build-debug/CMakeFiles/rebuild_cache.dir

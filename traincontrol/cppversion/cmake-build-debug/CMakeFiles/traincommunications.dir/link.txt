@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/traincommunications.dir/coms.cpp.o CMakeFiles/traincommunications.dir/hexConv.cpp.o CMakeFiles/traincommunications.dir/traincommunications.cpp.o -o traincommunications 

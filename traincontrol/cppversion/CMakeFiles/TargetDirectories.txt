@@ -1,0 +1,7 @@
+/home/nander/traincontrol/traincontrol/CMakeFiles/uninstall.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/edit_cache.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/rebuild_cache.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/list_install_components.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/install.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/install/local.dir
+/home/nander/traincontrol/traincontrol/CMakeFiles/install/strip.dir
