@@ -2,11 +2,22 @@ package core
 
 import (
 	"fmt"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/types"
 )
 
-func (c *Core) handleSwitchSet(msg types.Msg) {
-	v := types.SetSwitchResult{SetSwitch: types.SetSwitch{SwitchID: msg.Val[0], Direction: msg.Val[1] == 1}}.String()
+type MessageAdapter struct {
+	c *Core
+}
 
-	fmt.Println(v)
+func (m *MessageAdapter) SendReturnMessage(msg bridge.Msg) error {
+	fmt.Println("OUT", msg)
+
+	switch msg.Type {
+	case 3:
+		vv := types.SetSwitchResult{SetSwitch: types.SetSwitch{SwitchID: msg.Val[0], Direction: msg.Val[1] == 1}}
+
+		m.c.HandleSwitchSet(vv)
+	}
+	return nil
 }

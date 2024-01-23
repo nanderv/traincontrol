@@ -8,12 +8,11 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	_, cancel := context.WithCancel(context.Background())
 	newCore, err := core.NewCore(core.WithFakeBridge())
 	if err != nil {
 		return
 	}
-	go newCore.EventHandler(ctx)
 	go http_adapter.Init()
 
 	newCore.SetSwitch(1, true)

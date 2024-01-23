@@ -1,8 +1,9 @@
-package types
+package bridge
 
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2/utils"
+	"github.com/nanderv/traincontrol-prototype/internal/types"
 	"testing"
 )
 
@@ -19,7 +20,7 @@ func mustnot[T any](a T, e error) T {
 	return a
 }
 func TestSwitchMsg(t *testing.T) {
-	s := SetSwitch{
+	s := types.SetSwitch{
 		SwitchID:  2,
 		Direction: false,
 	}

@@ -2,26 +2,33 @@ package bridge
 
 import (
 	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/types"
 )
+
+type Returner interface {
+	SendReturnMessage(Msg) error
+}
 
 // The FakeBridge is responsible for translating commands towards things the railway can understand
 type FakeBridge struct {
-	Result *chan types.Msg
+	Returner Returner
 }
 
-func (f *FakeBridge) Send(m types.Msg) {
+func (f *FakeBridge) Send(m Msg) error {
 	fmt.Println("IN", m)
 	r := m
 	if m.Type == 2 {
 		r.Type = 3
 	}
-	*f.Result <- r
+	err := f.Returner.SendReturnMessage(r)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func NewFakeBridge(cc *chan types.Msg) *FakeBridge {
+func NewFakeBridge(cc Returner) *FakeBridge {
 	bridge := FakeBridge{
-		Result: cc,
+		Returner: cc,
 	}
 	return &bridge
 }

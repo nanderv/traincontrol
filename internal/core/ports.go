@@ -1,16 +1,13 @@
 package core
 
 import (
-	"context"
-	"github.com/nanderv/traincontrol-prototype/internal/types"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 )
 
 type SendCommand interface {
-	Send(m types.Msg)
+	Send(m bridge.Msg) error
 }
-type ReceiveCommand interface {
-	BlockedReceive(ctx context.Context) (types.Msg, error)
-}
+
 type CommandBridge interface {
 	SendCommand
 }

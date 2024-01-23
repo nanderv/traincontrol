@@ -1,14 +1,17 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+)
 
 type SetSwitch struct {
 	SwitchID  byte
 	Direction bool
 }
 
-func (s SetSwitch) ToBridgeMsg() Msg {
-	var d Msg
+func (s SetSwitch) ToBridgeMsg() bridge.Msg {
+	var d bridge.Msg
 	d.Type = 2
 	d.Val[0] = s.SwitchID
 	if s.Direction {
