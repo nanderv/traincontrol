@@ -19,10 +19,9 @@ func (f *FakeBridge) Send(m types.Msg) {
 	*f.Result <- r
 }
 
-func NewFakeBridge() (*FakeBridge, *chan types.Msg) {
-	cc := make(chan types.Msg, 10)
+func NewFakeBridge(cc *chan types.Msg) *FakeBridge {
 	bridge := FakeBridge{
-		Result: &cc,
+		Result: cc,
 	}
-	return &bridge, &cc
+	return &bridge
 }

@@ -7,13 +7,14 @@ import (
 )
 
 type Core struct {
-	CommandBridge              CommandBridge
-	CommandBridgeReturnChannel *chan types.Msg
+	CommandBridge        CommandBridge
+	MessageReturnChannel *chan types.Msg
 }
 
 func NewCore(configurator ...Configurator) (Core, error) {
 	c := Core{}
-
+	ch := make(chan types.Msg, 10)
+	c.MessageReturnChannel = &ch
 	for _, config := range configurator {
 		var err error
 		c, err = config(c)
@@ -33,7 +34,7 @@ func (c *Core) EventHandler(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-(*c.CommandBridgeReturnChannel):
+		case msg := <-(*c.MessageReturnChannel):
 			fmt.Println("OUT", msg)
 		}
 	}
