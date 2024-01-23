@@ -20,9 +20,3 @@ func (s SetSwitch) ToBridgeMsg() Msg {
 type SetSwitchResult struct {
 	SetSwitch
 }
-
-func (s SetSwitchResult) ToBridgeMsg() Msg {
-	d := s.SetSwitch.ToBridgeMsg()
-	d.Type = d.Type + 1
-	return d
-}

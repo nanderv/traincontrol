@@ -1,8 +1,27 @@
 package main
 
-import "github.com/nanderv/traincontrol-prototype/internal/http_adapter"
+import (
+	"context"
+	"github.com/nanderv/traincontrol-prototype/internal/core"
+	"github.com/nanderv/traincontrol-prototype/internal/http_adapter"
+	"time"
+)
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	newCore, err := core.NewCore(core.WithFakeBridge())
+	if err != nil {
+		return
+	}
+	go newCore.EventHandler(ctx)
 	go http_adapter.Init()
-	select {}
+
+	newCore.SetSwitch(1, true)
+	newCore.SetSwitch(2, true)
+	newCore.SetSwitch(2, false)
+
+	time.Sleep(1 * time.Hour)
+
+	cancel()
+
 }
