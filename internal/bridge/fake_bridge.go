@@ -1,8 +1,6 @@
 package bridge
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/types"
 )
@@ -21,12 +19,10 @@ func (f *FakeBridge) Send(m types.Msg) {
 	*f.Result <- r
 }
 
-func (f *FakeBridge) BlockedReceive(ctx context.Context) (types.Msg, error) {
-	select {
-	case <-ctx.Done():
-		return types.Msg{}, errors.New("early exit")
-	case m := <-*f.Result:
-		fmt.Println("OUT", m)
-		return m, nil
+func NewFakeBridge() (*FakeBridge, *chan types.Msg) {
+	cc := make(chan types.Msg, 10)
+	bridge := FakeBridge{
+		Result: &cc,
 	}
+	return &bridge, &cc
 }

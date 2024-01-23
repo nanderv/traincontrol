@@ -7,7 +7,8 @@ import (
 )
 
 type Core struct {
-	CommandBridge CommandBridge
+	CommandBridge              CommandBridge
+	CommandBridgeReturnChannel *chan types.Msg
 }
 
 func NewCore(configurator ...Configurator) (Core, error) {
@@ -29,10 +30,11 @@ func (c *Core) SetSwitch(switchID byte, direction bool) {
 
 func (c *Core) EventHandler(ctx context.Context) {
 	for {
-		msg, err := c.CommandBridge.BlockedReceive(ctx)
-		if err != nil {
+		select {
+		case <-ctx.Done():
 			return
+		case msg := <-(*c.CommandBridgeReturnChannel):
+			fmt.Println("OUT", msg)
 		}
-		fmt.Println(msg)
 	}
 }

@@ -13,5 +13,4 @@ type ReceiveCommand interface {
 }
 type CommandBridge interface {
 	SendCommand
-	ReceiveCommand
 }
