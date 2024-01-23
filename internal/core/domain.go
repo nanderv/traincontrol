@@ -35,6 +35,10 @@ func (c *Core) EventHandler(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case msg := <-(*c.MessageReturnChannel):
+			switch msg.Type {
+			case 3:
+				c.handleSwitchSet(msg)
+			}
 			fmt.Println("OUT", msg)
 		}
 	}
