@@ -1,6 +1,9 @@
 <html>
 <head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="/semantic/semantic.js"></script>
+
     <link rel="stylesheet" href="semantic/semantic.css">
 </head>
     <script>
@@ -31,19 +34,28 @@ function doit() {
     };
 }
 
-doit()
+// doit()
 function send(){
     fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })
 }
     </script>
     <body>
+
     <div class="lg:content-auto">
         <h1 class="text-3xl font-bold underline text-clifford">
             Hello world!
         </h1>
+        <div hx-sse="connect:/chunk swap:update">
+            <div hx-trigger="sse:new_news" hx-get="/chunk"></div>
+        </div>
         <canvas id="canvas" width="500px" height="500px"></canvas>
 
-    CMD: <div class="ui left icon input loading"><input class = "ui input" id="cmd" /></div>
+        <div class="ui left corner labeled input">
+
+            <input id="cmd" />
+            <div class="ui left corner label">
+                <i class="asterisk icon"></i>
+    </div>
     <input class="ui button" type="submit" onclick="send();">
     </div>
     </body>
