@@ -1,9 +1,7 @@
 package bridge
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2/utils"
-	"github.com/nanderv/traincontrol-prototype/internal/types"
 	"testing"
 )
 
@@ -20,14 +18,8 @@ func mustnot[T any](a T, e error) T {
 	return a
 }
 func TestSwitchMsg(t *testing.T) {
-	s := types.SetSwitch{
-		SwitchID:  2,
-		Direction: false,
-	}
-	msg := s.ToBridgeMsg()
-
+	msg := Msg{Type: 2, Val: [6]byte{}}
 	//utils.AssertEqual(t, msg.encode(), true)
-	fmt.Println(msg.encode())
 	utils.AssertEqual(t, must(msg.encode().decode()), msg)
 	v := msg.encode()
 	v[0] = v[0] + 1

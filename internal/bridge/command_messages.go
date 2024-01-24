@@ -25,42 +25,12 @@ const reverseHexTable = "" +
 
 const Size = 6
 
-type MsgSrc [(Size + 2) * 2]byte
-
-func (m MsgSrc) String() string {
-	return string(m[:])
-}
-
-func (m MsgSrc) decode() (r Msg, err error) {
-	var bytes [Size + 2]byte
-	_, err = decode(&bytes, m)
-	var chk byte
-	if err != nil {
-		return
-	}
-	for i, b := range bytes {
-		chk ^= b
-		if i == 0 {
-
-			r.Type = b
-		} else {
-			if i < Size+1 {
-				r.Val[i-1] = b
-			}
-		}
-	}
-	if chk != 0 {
-		err = errors.New("incorrect check number")
-	}
-	return
-}
-
 type Msg struct {
 	Type byte
 	Val  [Size]byte
 }
 
-func (m Msg) encode() (r MsgSrc) {
+func (m Msg) encode() (r rawMsg) {
 	cd := m.Type
 	r[0] = hextable[m.Type>>4]
 	r[1] = hextable[m.Type&0x0f]
@@ -103,4 +73,34 @@ func decode(dst *[Size + 2]byte, src [(Size + 2) * 2]byte) (int, error) {
 		return i, nil
 	}
 	return i, nil
+}
+
+type rawMsg [(Size + 2) * 2]byte
+
+func (m rawMsg) String() string {
+	return string(m[:])
+}
+
+func (m rawMsg) decode() (r Msg, err error) {
+	var bytes [Size + 2]byte
+	_, err = decode(&bytes, m)
+	var chk byte
+	if err != nil {
+		return
+	}
+	for i, b := range bytes {
+		chk ^= b
+		if i == 0 {
+
+			r.Type = b
+		} else {
+			if i < Size+1 {
+				r.Val[i-1] = b
+			}
+		}
+	}
+	if chk != 0 {
+		err = errors.New("incorrect check number")
+	}
+	return
 }

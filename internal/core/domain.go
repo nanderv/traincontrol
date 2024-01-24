@@ -26,7 +26,7 @@ func NewCore(configurator ...Configurator) (*Core, error) {
 }
 
 func (c *Core) SetSwitch(switchID byte, direction bool) error {
-	return c.CommandBridge.Send(types.SetSwitch{SwitchID: switchID, Direction: direction}.ToBridgeMsg())
+	return c.CommandBridge.Send(types.NewSetSwitch(switchID, direction).ToBridgeMsg())
 }
 func (c *Core) HandleSwitchSet(msg types.SetSwitchResult) {
 	fmt.Println(msg.String())

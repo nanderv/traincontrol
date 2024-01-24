@@ -5,16 +5,23 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 )
 
+func NewSetSwitch(switchId byte, direction bool) SetSwitch {
+	return SetSwitch{
+		switchID:  switchId,
+		direction: direction,
+	}
+}
+
 type SetSwitch struct {
-	SwitchID  byte
-	Direction bool
+	switchID  byte
+	direction bool
 }
 
 func (s SetSwitch) ToBridgeMsg() bridge.Msg {
 	var d bridge.Msg
 	d.Type = 2
-	d.Val[0] = s.SwitchID
-	if s.Direction {
+	d.Val[0] = s.switchID
+	if s.direction {
 		d.Val[1] = 1
 	} else {
 		d.Val[1] = 0
@@ -24,10 +31,10 @@ func (s SetSwitch) ToBridgeMsg() bridge.Msg {
 
 func (s SetSwitch) String() string {
 	v := "left"
-	if s.Direction {
+	if s.direction {
 		v = "right"
 	}
-	return fmt.Sprintf("Switch %v set to direction %s", s.SwitchID, v)
+	return fmt.Sprintf("Switch %v set to direction %s", s.switchID, v)
 }
 
 type SetSwitchResult struct {

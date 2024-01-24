@@ -15,7 +15,7 @@ func (m *MessageAdapter) SendReturnMessage(msg bridge.Msg) error {
 
 	switch msg.Type {
 	case 3:
-		vv := types.SetSwitchResult{SetSwitch: types.SetSwitch{SwitchID: msg.Val[0], Direction: msg.Val[1] == 1}}
+		vv := types.SetSwitchResult{SetSwitch: types.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
 
 		m.c.HandleSwitchSet(vv)
 	}
