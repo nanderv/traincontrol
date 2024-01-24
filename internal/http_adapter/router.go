@@ -51,7 +51,15 @@ func RouteWithMessageRouter[T fmt.Stringer](router *MessageRouter[T]) func(w htt
 		for {
 			select {
 			case t := <-*c:
-				_, err := fmt.Fprintf(w, "data: %s\n\n", t)
+				fmt.Println(t)
+
+				_, err := fmt.Fprintln(w, "event: update")
+				if err != nil {
+					return
+				}
+
+				_, err = fmt.Fprintf(w, "data: %s\n\n", t)
+
 				if err != nil {
 					return
 				}
