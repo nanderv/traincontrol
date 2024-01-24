@@ -1,4 +1,8 @@
 <html>
+<head>
+    <script src="/semantic/semantic.js"></script>
+    <link rel="stylesheet" href="semantic/semantic.css">
+</head>
     <script>
 function doit() {
     const eventSource = new EventSource('/chunk');
@@ -33,8 +37,14 @@ function send(){
 }
     </script>
     <body>
+    <div class="lg:content-auto">
+        <h1 class="text-3xl font-bold underline text-clifford">
+            Hello world!
+        </h1>
         <canvas id="canvas" width="500px" height="500px"></canvas>
-    CMD: <input id="cmd" />
-    <input type="submit" onclick="send();">
-        </body>
+
+    CMD: <div class="ui left icon input loading"><input class = "ui input" id="cmd" /></div>
+    <input class="ui button" type="submit" onclick="send();">
+    </div>
+    </body>
 </html>
