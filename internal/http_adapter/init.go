@@ -11,13 +11,14 @@ type in struct {
 	Method   string `json:"data"`
 	Envelope string `json:"envelope"`
 }
-type msg string
 
-func (m msg) String() string {
+type routeMessage string
+
+func (m routeMessage) String() string {
 	return string(m)
 }
 
-func act(router *MessageRouter[msg]) func(w http.ResponseWriter, r *http.Request) {
+func act(router *MessageRouter[routeMessage]) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			fmt.Println("Wrong method")
@@ -32,7 +33,6 @@ func act(router *MessageRouter[msg]) func(w http.ResponseWriter, r *http.Request
 			fmt.Println("EE", err)
 			return
 		}
-		router.Send(msg(v.Method))
 	}
 }
 func Init() {
@@ -41,7 +41,7 @@ func Init() {
 	http.Handle("/", http.StripPrefix("/", fs))
 
 	// Add route for getting chunked data
-	rt := NewRouter[msg]()
+	rt := NewRouter[routeMessage]()
 	http.HandleFunc("/send", act(rt))
 	http.HandleFunc("/chunk", RouteWithMessageRouter(rt))
 
