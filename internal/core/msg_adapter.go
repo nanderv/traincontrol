@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
-	"github.com/nanderv/traincontrol-prototype/internal/types"
 )
 
 type MessageAdapter struct {
@@ -15,9 +14,9 @@ func (m *MessageAdapter) SendReturnMessage(msg bridge.Msg) error {
 
 	switch msg.Type {
 	case 3:
-		vv := types.SetSwitchResult{SetSwitch: types.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
+		vv := SetSwitchResult{SetSwitch: NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
 
-		m.c.HandleSwitchSet(vv)
+		m.c.SetSwitchEvent(vv)
 	}
 	return nil
 }
