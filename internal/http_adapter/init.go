@@ -37,7 +37,7 @@ func act(router *MessageRouter[msg]) func(w http.ResponseWriter, r *http.Request
 }
 func Init() {
 	// Add file server
-	fs := http.FileServer(http.Dir("internal/http_adapter/static/"))
+	fs := http.FileServer(http.Dir("webroot/"))
 	http.Handle("/", http.StripPrefix("/", fs))
 
 	// Add route for getting chunked data
