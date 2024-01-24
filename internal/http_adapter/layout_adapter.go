@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/core"
+	"time"
 )
 
 type LayoutAdapter struct {
@@ -26,8 +27,10 @@ func (l *LayoutAdapter) Handle(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-*l.ch:
+
 			fmt.Println("HI")
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
 }
