@@ -1,4 +1,4 @@
-package http_adapter
+package web
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func RouteWithMessageRouter[T fmt.Stringer](router *MessageRouter[T]) func(w htt
 		flusher, ok := w.(http.Flusher)
 
 		if !ok {
-			panic("expected http.ResponseWriter to be an http.Flusher")
+			panic("expected web.ResponseWriter to be an web.Flusher")
 		}
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Type")
