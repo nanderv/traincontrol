@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/nanderv/traincontrol-prototype/internal/core"
-	"github.com/nanderv/traincontrol-prototype/internal/http_adapter"
+	"github.com/nanderv/traincontrol-prototype/internal/web"
 	"time"
 )
 
@@ -11,7 +11,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	go http_adapter.Init()
+	go web.Init()
 
 	err = core.SetSwitchAction(1, true)
 	if err != nil {
