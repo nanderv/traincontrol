@@ -5,33 +5,34 @@ import (
 	"net/http"
 )
 
-type MessageRouter[T fmt.Stringer] struct {
-	channelMap map[*chan T]struct{}
+type MessageRouter struct {
+	channelMap map[*chan []byte]struct{}
 }
 
-func (r *MessageRouter[T]) Subscribe() *chan T {
+func (r *MessageRouter) Subscribe() *chan []byte {
 	fmt.Println("Connect")
-	c := make(chan T)
+	c := make(chan []byte)
 	r.channelMap[&c] = struct{}{}
 	return &c
 }
-func (r *MessageRouter[T]) Unsubscribe(c *chan T) {
+func (r *MessageRouter) Unsubscribe(c *chan []byte) {
 	fmt.Println("Disco")
 	delete(r.channelMap, c)
 }
-func (r *MessageRouter[T]) Send(in T) {
+func (r *MessageRouter) Write(in []byte) (int, error) {
 	for c, _ := range r.channelMap {
 		*c <- in
 	}
+	return len(in), nil
 }
-func NewRouter[T fmt.Stringer]() *MessageRouter[T] {
-	m := make(map[*chan T]struct{})
-	return &MessageRouter[T]{
+func NewRouter() *MessageRouter {
+	m := make(map[*chan []byte]struct{})
+	return &MessageRouter{
 		channelMap: m,
 	}
 }
 
-func RouteWithMessageRouter[T fmt.Stringer](router *MessageRouter[T]) func(w http.ResponseWriter, r *http.Request) {
+func RouteWithMessageRouter(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := router.Subscribe()
 		defer router.Unsubscribe(c)
