@@ -1,4 +1,4 @@
-package http_adapter
+package web
 
 import (
 	"context"
