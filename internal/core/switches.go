@@ -34,7 +34,7 @@ func (s SetSwitch) String() string {
 	if s.direction {
 		v = "right"
 	}
-	return fmt.Sprintf("Switch %v set to direction %s", s.switchID, v)
+	return fmt.Sprintf("Switch %v set to Direction %s", s.switchID, v)
 }
 
 type SetSwitchResult struct {

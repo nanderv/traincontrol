@@ -14,7 +14,7 @@ func WithFakeBridge() func(c *Core) error {
 
 func WithTrackSwitch(id byte) func(c *Core) error {
 	return func(c *Core) error {
-		c.state.trackSwitches = append(c.state.trackSwitches, TrackSwitch{number: id})
+		c.state.TrackSwitches = append(c.state.TrackSwitches, TrackSwitch{Number: id})
 		return nil
 	}
 }
