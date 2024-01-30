@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/core"
@@ -36,17 +37,24 @@ func act(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-func Init(c *core.Core) {
+func Init(ctx context.Context, c *core.Core) error {
 	// Add file server
 	fs := http.FileServer(http.Dir("webroot/"))
 	http.Handle("/", http.StripPrefix("/", fs))
 
 	// Add route for getting chunked data
 	rt := NewRouter()
+	go func() {
+		err := NewLayoutAdapter(c, rt).Handle(ctx)
+		if err != nil {
+			return
+		}
+	}()
 	http.HandleFunc("/send", act(rt))
 	http.HandleFunc("/chunk", RouteWithMessageRouter(rt))
 
 	// Start the server
 	log.Print("Listening on localhost:8888")
 	log.Fatal(http.ListenAndServe(":8888", nil))
+	return nil
 }

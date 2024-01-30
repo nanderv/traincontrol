@@ -6,7 +6,7 @@ import (
 )
 
 type State struct {
-	trackSwitches []TrackSwitch
+	TrackSwitches []TrackSwitch
 }
 type Core struct {
 	commandBridge        CommandBridge
@@ -15,11 +15,16 @@ type Core struct {
 	state                State
 }
 
+func (c *Core) AddNewReturnChannel() *chan State {
+	ch := make(chan State)
+	c.notifyChangeChannels = append(c.notifyChangeChannels, &ch)
+	return &ch
+}
 func NewCore(configurator ...Configurator) (*Core, error) {
 	c := Core{}
 	ch := make(chan bridge.Msg, 10)
 	c.messageReturnChannel = &ch
-	c.state.trackSwitches = make([]TrackSwitch, 0)
+	c.state.TrackSwitches = make([]TrackSwitch, 0)
 	c.notifyChangeChannels = make([]*chan State, 0)
 	for _, config := range configurator {
 		var err error
@@ -33,8 +38,8 @@ func NewCore(configurator ...Configurator) (*Core, error) {
 
 func (c *Core) SetSwitchAction(switchID byte, direction bool) error {
 	var found bool
-	for _, sw := range c.state.trackSwitches {
-		if sw.number == switchID {
+	for _, sw := range c.state.TrackSwitches {
+		if sw.Number == switchID {
 			found = true
 		}
 	}
@@ -45,9 +50,9 @@ func (c *Core) SetSwitchAction(switchID byte, direction bool) error {
 }
 
 func (c *Core) SetSwitchEvent(msg SetSwitchResult) {
-	for _, sw := range c.state.trackSwitches {
-		if sw.number == msg.SetSwitch.switchID {
-			sw.direction = msg.SetSwitch.direction
+	for i, sw := range c.state.TrackSwitches {
+		if sw.Number == msg.SetSwitch.switchID {
+			c.state.TrackSwitches[i].Direction = msg.SetSwitch.direction
 		}
 	}
 	c.notify()
@@ -55,16 +60,17 @@ func (c *Core) SetSwitchEvent(msg SetSwitchResult) {
 }
 
 type TrackSwitch struct {
-	number    byte
-	direction bool
+	Number    byte
+	Direction bool
 }
 
 func (c *Core) notify() {
+	fmt.Println("NOTIFY")
 	for _, ch := range c.notifyChangeChannels {
+		fmt.Println(ch)
 		select {
 		case *ch <- c.state:
-			return
-		default:
+			fmt.Println(c.state)
 			return
 		}
 	}
