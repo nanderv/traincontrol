@@ -2,19 +2,18 @@ package web
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"github.com/nanderv/traincontrol-prototype/internal/core"
 	"io"
-	"time"
 )
 
 type LayoutAdapter struct {
 	c  *core.Core
-	ch *chan struct{}
+	ch *chan core.State
 	h  io.Writer
 }
 
-func NewLayoutAdapter(c *core.Core, ch *chan struct{}, h io.Writer) *LayoutAdapter {
+func NewLayoutAdapter(c *core.Core, ch *chan core.State, h io.Writer) *LayoutAdapter {
 	return &LayoutAdapter{
 		c:  c,
 		ch: ch,
@@ -27,14 +26,15 @@ func (l *LayoutAdapter) Handle(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-*l.ch:
-			_, err := l.h.Write([]byte("hi"))
+		case d := <-*l.ch:
+			b, err := json.Marshal(&d)
 			if err != nil {
 				return err
 			}
-			fmt.Println("HI")
+			_, err = l.h.Write(b)
+			if err != nil {
+				return err
+			}
 		}
-		time.Sleep(100 * time.Millisecond)
 	}
-
 }
