@@ -13,10 +13,10 @@ type LayoutAdapter struct {
 	h  io.Writer
 }
 
-func NewLayoutAdapter(c *core.Core, ch *chan core.State, h io.Writer) *LayoutAdapter {
+func NewLayoutAdapter(c *core.Core, h io.Writer) *LayoutAdapter {
 	return &LayoutAdapter{
 		c:  c,
-		ch: ch,
+		ch: c.AddNewReturnChannel(),
 		h:  h,
 	}
 }
@@ -25,16 +25,19 @@ func (l *LayoutAdapter) Handle(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+
 			return nil
 		case d := <-*l.ch:
 			b, err := json.Marshal(&d)
 			if err != nil {
 				return err
 			}
+
 			_, err = l.h.Write(b)
 			if err != nil {
 				return err
 			}
 		}
 	}
+	return nil
 }
