@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/nanderv/traincontrol-prototype/internal/core"
 	"log"
 	"net/http"
 )
@@ -35,7 +36,7 @@ func act(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-func Init() {
+func Init(c *core.Core) {
 	// Add file server
 	fs := http.FileServer(http.Dir("webroot/"))
 	http.Handle("/", http.StripPrefix("/", fs))
