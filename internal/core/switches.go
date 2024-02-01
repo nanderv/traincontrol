@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 )
 
 func NewSetSwitch(switchId byte, direction bool) SetSwitch {
@@ -17,8 +17,8 @@ type SetSwitch struct {
 	direction bool
 }
 
-func (s SetSwitch) ToBridgeMsg() bridge.Msg {
-	var d bridge.Msg
+func (s SetSwitch) ToBridgeMsg() domain.Msg {
+	var d domain.Msg
 	d.Type = 2
 	d.Val[0] = s.switchID
 	if s.direction {

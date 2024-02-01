@@ -1,4 +1,4 @@
-package bridge
+package domain
 
 import (
 	"errors"
@@ -25,12 +25,18 @@ const reverseHexTable = "" +
 
 const Size = 6
 
+func ValidChar(b byte) bool {
+	rr := reverseHexTable[b]
+	return rr <= 0x0f
+
+}
+
 type Msg struct {
 	Type byte
 	Val  [Size]byte
 }
 
-func (m Msg) encode() (r rawMsg) {
+func (m Msg) Encode() (r RawMsg) {
 	cd := m.Type
 	r[0] = hextable[m.Type>>4]
 	r[1] = hextable[m.Type&0x0f]
@@ -67,15 +73,15 @@ func decode(dst *[Size + 2]byte, src [(Size + 2) * 2]byte) (int, error) {
 	return j, nil
 }
 
-const rawSize = (Size + 2) * 2
+const RawSize = (Size + 2) * 2
 
-type rawMsg [rawSize]byte
+type RawMsg [RawSize]byte
 
-func (m rawMsg) String() string {
+func (m RawMsg) String() string {
 	return string(m[:])
 }
 
-func (m rawMsg) decode() (Msg, error) {
+func (m RawMsg) Decode() (Msg, error) {
 	var r Msg
 	var bytes [Size + 2]byte
 	_, err := decode(&bytes, m)
