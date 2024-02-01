@@ -9,7 +9,7 @@ import (
 
 type LayoutAdapter struct {
 	c  *core.Core
-	ch *chan core.State
+	ch *chan core.Layout
 	h  io.Writer
 }
 
@@ -39,5 +39,4 @@ func (l *LayoutAdapter) Handle(ctx context.Context) error {
 			}
 		}
 	}
-	return nil
 }
