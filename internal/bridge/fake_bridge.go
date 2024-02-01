@@ -8,7 +8,7 @@ type Returner interface {
 	SendReturnMessage(Msg) error
 }
 
-// The FakeBridge is responsible for translating commands towards things the railway can understand
+// The SerialBridge is responsible for translating commands towards things the railway can understand
 type FakeBridge struct {
 	Returner Returner
 }
@@ -31,4 +31,7 @@ func NewFakeBridge(cc Returner) *FakeBridge {
 		Returner: cc,
 	}
 	return &bridge
+}
+func (f *FakeBridge) Handle() {
+	return
 }
