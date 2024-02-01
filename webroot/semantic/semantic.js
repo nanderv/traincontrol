@@ -4317,7 +4317,7 @@ $.fn.dimmer.settings = {
   verbose     : false,
   performance : true,
 
-  // whether should use flex layout
+  // whether should use flex rails
   useFlex     : true,
 
   // name to distinguish between multiple dimmers in context
