@@ -9,7 +9,7 @@ import (
 
 type MessageAdapter struct {
 	c *core.Core
-	r core.SendCommand
+	r core.MessageSender
 }
 
 func (m *MessageAdapter) Receive(msg domain.Msg) error {
@@ -23,9 +23,11 @@ func (m *MessageAdapter) Receive(msg domain.Msg) error {
 	}
 	return nil
 }
+
 func (m *MessageAdapter) Send(msg domain.Msg) error {
 	return m.r.Send(msg)
 }
+
 func NewMessageAdapter(c *core.Core, b *bridge.SerialBridge) *MessageAdapter {
 	m := MessageAdapter{c: c, r: b}
 	c.AddCommandBridge(&m)

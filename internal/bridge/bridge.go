@@ -8,11 +8,11 @@ import (
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type SerialBridge struct {
-	returners []Receiver
+	returners []MessageReceiver
 	port      *serialport.SerialPort
 }
 
-func (f *SerialBridge) AddReceiver(r Receiver) {
+func (f *SerialBridge) AddReceiver(r MessageReceiver) {
 	f.returners = append(f.returners, r)
 }
 

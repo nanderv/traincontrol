@@ -2,6 +2,6 @@ package bridge
 
 import "github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 
-type Receiver interface {
-	Receive(domain.Msg) error
+type MessageReceiver interface {
+	Receive(msg domain.Msg) error
 }
