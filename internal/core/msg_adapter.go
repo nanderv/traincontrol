@@ -1,8 +1,8 @@
 package core
 
 import (
-	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"log/slog"
 )
 
 type MessageAdapter struct {
@@ -10,7 +10,7 @@ type MessageAdapter struct {
 }
 
 func (m *MessageAdapter) SendReturnMessage(msg bridge.Msg) error {
-	fmt.Println("OUT", msg)
+	slog.Info("INCOMING", "Data", msg)
 
 	switch msg.Type {
 	case 3:
