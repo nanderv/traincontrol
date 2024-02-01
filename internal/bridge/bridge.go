@@ -2,17 +2,22 @@ package bridge
 
 import (
 	"github.com/dsyx/serialport-go"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type SerialBridge struct {
-	Returner Returner
-	port     *serialport.SerialPort
+	returners []Receiver
+	port      *serialport.SerialPort
 }
 
-func (f *SerialBridge) Send(m Msg) error {
-	encoded := m.encode()
+func (f *SerialBridge) AddReceiver(r Receiver) {
+	f.returners = append(f.returners, r)
+}
+
+func (f *SerialBridge) Send(m domain.Msg) error {
+	encoded := m.Encode()
 	_, err := f.port.Write(encoded[:])
 	if err != nil {
 		return err
@@ -35,43 +40,44 @@ func (f *SerialBridge) Handle() {
 		throughrun = append(throughrun, bytes...)
 		counter := 0
 
-		for len(throughrun) > rawSize {
+		for len(throughrun) > domain.RawSize {
 			correct := true
-			msg := rawMsg{}
+			msg := domain.RawMsg{}
 			for i, v := range throughrun {
 				counter = i + 1
 				msg[i] = v
-				if reverseHexTable[v] > 0x0f {
+				if !domain.ValidChar(v) {
 					correct = false
 					break
 				}
-				if i >= rawSize-1 {
+				if i >= domain.RawSize-1 {
 					break
 				}
 			}
 			throughrun = throughrun[counter:]
 
 			if correct {
-				mm, err := msg.decode()
+				mm, err := msg.Decode()
 				if err != nil {
 					slog.Error("incorrect message", err)
 					continue
 				}
-				err = f.Returner.SendReturnMessage(mm)
-				if err != nil {
-					slog.Error("incorrect message", err)
+				for _, r := range f.returners {
+					err = r.Receive(mm)
+					if err != nil {
+						slog.Error("incorrect message", err)
+					}
 				}
 			}
 		}
 	}
 }
-func NewSerialBridge(returner Returner) *SerialBridge {
-
+func NewSerialBridge() *SerialBridge {
 	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())
 	if err != nil {
 		slog.Error("couldn't open serial conn", err)
 	}
 
 	slog.Info("HERE")
-	return &SerialBridge{port: port, Returner: returner}
+	return &SerialBridge{port: port}
 }
