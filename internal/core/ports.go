@@ -6,6 +6,7 @@ import (
 
 type SendCommand interface {
 	Send(m bridge.Msg) error
+	Handle()
 }
 
 type CommandBridge interface {
