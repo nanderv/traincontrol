@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/nanderv/traincontrol-prototype/internal/core"
+	"github.com/nanderv/traincontrol-prototype/internal/core/domain/layout"
 	"io"
 )
 
 type LayoutAdapter struct {
 	c  *core.Core
-	ch *chan core.Layout
+	ch *chan layout.Layout
 	h  io.Writer
 }
 
