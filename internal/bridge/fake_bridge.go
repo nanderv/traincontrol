@@ -7,7 +7,7 @@ import (
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type FakeBridge struct {
-	Returner Receiver
+	Returner MessageReceiver
 }
 
 func (f *FakeBridge) Send(m domain.Msg) error {
@@ -23,7 +23,7 @@ func (f *FakeBridge) Send(m domain.Msg) error {
 	return nil
 }
 
-func NewFakeBridge(cc Receiver) *FakeBridge {
+func NewFakeBridge(cc MessageReceiver) *FakeBridge {
 	bridge := FakeBridge{
 		Returner: cc,
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 type Core struct {
-	layoutBridges        []CommandBridge
+	layoutBridges        []MessageSender
 	notifyChangeChannels []*chan layout2.Layout
 	layout               layout2.Layout
 }
@@ -19,7 +19,7 @@ func (c *Core) AddNewReturnChannel() *chan layout2.Layout {
 	return &ch
 }
 
-func (c *Core) AddCommandBridge(cc CommandBridge) {
+func (c *Core) AddCommandBridge(cc MessageSender) {
 	c.layoutBridges = append(c.layoutBridges, cc)
 	return
 }
