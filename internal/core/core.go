@@ -1,36 +1,33 @@
 package core
 
 import (
+	"errors"
 	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	layout2 "github.com/nanderv/traincontrol-prototype/internal/core/domain/layout"
 )
 
-type Layout struct {
-	TrackSwitches []TrackSwitch
-}
-type TrackSwitch struct {
-	Number    byte
-	Direction bool
-}
-
 type Core struct {
-	commandBridge        CommandBridge
-	messageReturnChannel *chan bridge.Msg
-	notifyChangeChannels []*chan Layout
-	layout               Layout
+	layoutBridges        []CommandBridge
+	notifyChangeChannels []*chan layout2.Layout
+	layout               layout2.Layout
 }
 
-func (c *Core) AddNewReturnChannel() *chan Layout {
-	ch := make(chan Layout)
+func (c *Core) AddNewReturnChannel() *chan layout2.Layout {
+	ch := make(chan layout2.Layout)
 	c.notifyChangeChannels = append(c.notifyChangeChannels, &ch)
 	return &ch
 }
+
+func (c *Core) AddCommandBridge(cc CommandBridge) {
+	c.layoutBridges = append(c.layoutBridges, cc)
+	return
+}
+
 func NewCore(configurator ...Configurator) (*Core, error) {
 	c := Core{}
-	ch := make(chan bridge.Msg, 10)
-	c.messageReturnChannel = &ch
-	c.layout.TrackSwitches = make([]TrackSwitch, 0)
-	c.notifyChangeChannels = make([]*chan Layout, 0)
+	c.layout.TrackSwitches = make([]layout2.TrackSwitch, 0)
+	c.notifyChangeChannels = make([]*chan layout2.Layout, 0)
 	for _, config := range configurator {
 		var err error
 		err = config(&c)
@@ -51,9 +48,24 @@ func (c *Core) SetSwitchAction(switchID byte, direction bool) error {
 	if !found {
 		return fmt.Errorf("switch with id %v not found", switchID)
 	}
-	return c.commandBridge.Send(NewSetSwitch(switchID, direction).ToBridgeMsg())
+
+	return c.sendToBridges(NewSetSwitch(switchID, direction).ToBridgeMsg())
 }
 
+func (c *Core) sendToBridges(msg domain.Msg) error {
+	var errOut error
+	for _, b := range c.layoutBridges {
+		err := b.Send(msg)
+		if err != nil {
+			if errOut == nil {
+				errOut = err
+			} else {
+				errOut = errors.Join(errOut, err)
+			}
+		}
+	}
+	return errOut
+}
 func (c *Core) SetSwitchEvent(msg SetSwitchResult) {
 	for i, sw := range c.layout.TrackSwitches {
 		if sw.Number == msg.SetSwitch.switchID {
