@@ -17,6 +17,13 @@ type SetSwitch struct {
 	direction bool
 }
 
+func (s SetSwitch) IsSwitch(b byte) bool {
+	return s.switchID == b
+}
+
+func (s SetSwitch) GetDirection() bool {
+	return s.direction
+}
 func (s SetSwitch) ToBridgeMsg() domain.Msg {
 	var d domain.Msg
 	d.Type = 2
