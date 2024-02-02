@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/core/domain/commands"
 	layout2 "github.com/nanderv/traincontrol-prototype/internal/core/domain/layout"
 )
 
 type Core struct {
-	layoutBridges        []MessageSender
+	layoutBridges        []MessageSender[domain.Msg]
 	notifyChangeChannels []*chan layout2.Layout
 	layout               layout2.Layout
 }
@@ -19,7 +20,7 @@ func (c *Core) AddNewReturnChannel() *chan layout2.Layout {
 	return &ch
 }
 
-func (c *Core) AddCommandBridge(cc MessageSender) {
+func (c *Core) AddCommandBridge(cc MessageSender[domain.Msg]) {
 	c.layoutBridges = append(c.layoutBridges, cc)
 	return
 }
@@ -49,10 +50,10 @@ func (c *Core) SetSwitchAction(switchID byte, direction bool) error {
 		return fmt.Errorf("switch with id %v not found", switchID)
 	}
 
-	return c.sendToBridges(NewSetSwitch(switchID, direction).ToBridgeMsg())
+	return c.sendToBridges(commands.NewSetSwitch(switchID, direction))
 }
 
-func (c *Core) sendToBridges(msg domain.Msg) error {
+func (c *Core) sendToBridges(msg Msger[domain.Msg]) error {
 	var errOut error
 	for _, b := range c.layoutBridges {
 		err := b.Send(msg)
@@ -66,7 +67,7 @@ func (c *Core) sendToBridges(msg domain.Msg) error {
 	}
 	return errOut
 }
-func (c *Core) SetSwitchEvent(msg SetSwitchResult) {
+func (c *Core) SetSwitchEvent(msg commands.SetSwitchResult) {
 	for i, sw := range c.layout.TrackSwitches {
 		if sw.Number == msg.SetSwitch.switchID {
 			c.layout.TrackSwitches[i].Direction = msg.SetSwitch.direction
