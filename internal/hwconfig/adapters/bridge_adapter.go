@@ -11,7 +11,7 @@ import (
 
 type MessageAdapter struct {
 	core   *core.Core
-	sender core.BridgeSender[domain.Msg]
+	sender core.MessageSender
 }
 
 // Receive a message from a layout
@@ -29,8 +29,8 @@ func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 }
 
 // Send a message towards a layout
-func (ma *MessageAdapter) Send(msg core.Msger[domain.Msg]) error {
-	return ma.sender.Send(msg.ToBridgeMsg())
+func (ma *MessageAdapter) Send(msg domain.Msg) error {
+	return ma.sender.Send(msg)
 }
 
 func NewMessageAdapter(c *core.Core, b *bridge.SerialBridge) *MessageAdapter {
