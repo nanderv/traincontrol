@@ -56,12 +56,13 @@ func (c *HwConfigurator) sendNodeNfo(mac [3]byte, initAddr byte) {
 
 func (c *HwConfigurator) AddNode(mac [3]byte, initAddr byte) {
 	reqAddr := initAddr
+	newNode := true
 	if reqAddr == 255 {
 		reqAddr = c.firstFreeAddr()
 	}
 	for _, no := range c.nodes {
 		if no.mac == mac {
-			fmt.Println("macc")
+			newNode = false
 			break
 		} else {
 			if no.addr == reqAddr {
@@ -69,7 +70,11 @@ func (c *HwConfigurator) AddNode(mac [3]byte, initAddr byte) {
 			}
 		}
 	}
-	fmt.Println("New Node")
+	if newNode {
+		fmt.Println("New Node")
+	} else {
+		fmt.Println("Welcome back")
+	}
 	c.sendNodeNfo(mac, reqAddr)
 	c.nodes = append(c.nodes, node{mac: mac, addr: reqAddr})
 
