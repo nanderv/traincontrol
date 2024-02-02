@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"github.com/nanderv/traincontrol-prototype/internal/hwconfig"
+	hwAdapters "github.com/nanderv/traincontrol-prototype/internal/hwconfig/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/web"
@@ -22,8 +24,8 @@ func main() {
 
 	adapters.NewMessageAdapter(c, bridg)
 
-	//hwConf := hwconfig.HwConfigurator{}
-	//hwAdapters.NewMessageAdapter(&hwConf, bridg)
+	hwConf := hwconfig.HwConfigurator{}
+	hwAdapters.NewMessageAdapter(&hwConf, bridg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

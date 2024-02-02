@@ -2,8 +2,6 @@ package adapters
 
 import (
 	"errors"
-	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
@@ -19,21 +17,17 @@ type MessageAdapter struct {
 	listeners map[*chan domain.Msg]struct{}
 }
 
-func (ma *MessageAdapter) addListener() *chan domain.Msg {
-	ch := make(chan domain.Msg)
-	ma.listeners[&ch] = struct{}{}
-	return &ch
-}
-
-func (ma *MessageAdapter) removeListener(ch *chan domain.Msg) {
-	delete(ma.listeners, ch)
-	return
+func NewMessageAdapter(svc *traintracks.TrackService, bridge Bridge) *MessageAdapter {
+	m := MessageAdapter{core: svc, sender: bridge, listeners: make(map[*chan domain.Msg]struct{})}
+	svc.SetLayoutSender(&m)
+	bridge.AddReceiver(&m)
+	return &m
 }
 
 // Receive a message from a layout
 func (ma *MessageAdapter) Receive(msg domain.Msg) error {
-	for r, _ := range ma.listeners {
-		*r <- msg
+	for lnr, _ := range ma.listeners {
+		*lnr <- msg
 	}
 	slog.Info("INCOMING", "Data", msg)
 
@@ -46,9 +40,12 @@ func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	}
 	return nil
 }
-func (ma *MessageAdapter) setSwitchDirection(switchID byte, direction bool, retriesRemaining int) error {
-	ch := ma.addListener()
-	defer ma.removeListener(ch)
+
+func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
+	retriesRemaining := 10
+
+	cha := ma.addListener()
+	defer ma.removeListener(cha)
 
 	msg := commands.NewSetSwitch(switchID, direction)
 
@@ -59,36 +56,31 @@ func (ma *MessageAdapter) setSwitchDirection(switchID byte, direction bool, retr
 		}
 		retriesRemaining--
 		select {
-		case msg := <-*ch:
-			if msg.Type == 3 && msg.Val[0] == switchID && (msg.Val[1] == 1) == direction {
-				fmt.Println("Done direction", msg)
-
+		case resultMsg := <-*cha:
+			if resultMsg.Type == 3 && resultMsg.Val[0] == switchID && (resultMsg.Val[1] == 1) == direction {
+				slog.Info("Done direction", "message", resultMsg)
 				return nil
 			} else {
 				// Correctly arrived messages that are not the right one don't count towards retry counter
+				slog.Debug("Message received, but irrelevant", "message", resultMsg)
 				retriesRemaining += 1
 			}
-		case <-time.After(100 * time.Millisecond):
-			fmt.Println("timeout ", retriesRemaining)
+		case <-time.After(500 * time.Millisecond):
+			slog.Warn("timeout while sending ", "message", msg.ToBridgeMsg())
 			break
 		}
 	}
 
 	return errors.New("out of retries")
 }
-func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
-	fmt.Println("SS")
-	return ma.setSwitchDirection(switchID, direction, 10)
+
+func (ma *MessageAdapter) addListener() *chan domain.Msg {
+	ch := make(chan domain.Msg)
+	ma.listeners[&ch] = struct{}{}
+	return &ch
 }
 
-type Bridge interface {
-	AddReceiver(bridge.MessageReceiver)
-	Send(domain.Msg) error
-}
-
-func NewMessageAdapter(c *traintracks.TrackService, b Bridge) *MessageAdapter {
-	m := MessageAdapter{core: c, sender: b, listeners: make(map[*chan domain.Msg]struct{})}
-	c.SetLayoutSender(&m)
-	b.AddReceiver(&m)
-	return &m
+func (ma *MessageAdapter) removeListener(ch *chan domain.Msg) {
+	delete(ma.listeners, ch)
+	return
 }

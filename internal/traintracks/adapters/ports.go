@@ -1,15 +1,15 @@
 package adapters
 
-// The MessageSender interface allows sending off any struct that can become a specific type of message
-type MessageSender[T any] interface {
-	Send(m Msger[T]) error
-}
+import (
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+)
 
 type bridgeSender[T any] interface {
 	Send(m T) error
 }
 
-// A Msger is any struct that can become a specific type of message
-type Msger[T any] interface {
-	ToBridgeMsg() T
+type Bridge interface {
+	AddReceiver(bridge.MessageReceiver)
+	Send(domain.Msg) error
 }
