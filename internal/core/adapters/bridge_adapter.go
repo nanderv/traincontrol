@@ -8,28 +8,27 @@ import (
 )
 
 type MessageAdapter struct {
-	c *core.Core
-	r core.MessageSender
+	core   *core.Core
+	sender core.MessageSender
 }
 
-func (m *MessageAdapter) Receive(msg domain.Msg) error {
+func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	slog.Info("INCOMING", "Data", msg)
 
 	switch msg.Type {
 	case 3:
-		vv := core.SetSwitchResult{SetSwitch: core.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
-
-		m.c.SetSwitchEvent(vv)
+		c := core.SetSwitchResult{SetSwitch: core.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
+		ma.core.SetSwitchEvent(c)
 	}
 	return nil
 }
 
-func (m *MessageAdapter) Send(msg domain.Msg) error {
-	return m.r.Send(msg)
+func (ma *MessageAdapter) Send(msg domain.Msg) error {
+	return ma.sender.Send(msg)
 }
 
 func NewMessageAdapter(c *core.Core, b *bridge.SerialBridge) *MessageAdapter {
-	m := MessageAdapter{c: c, r: b}
+	m := MessageAdapter{core: c, sender: b}
 	c.AddCommandBridge(&m)
 	b.AddReceiver(&m)
 	return &m
