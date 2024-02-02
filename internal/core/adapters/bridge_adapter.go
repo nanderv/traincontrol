@@ -12,6 +12,7 @@ type MessageAdapter struct {
 	sender core.MessageSender
 }
 
+// Receive a message from a layout
 func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	slog.Info("INCOMING", "Data", msg)
 
@@ -23,6 +24,7 @@ func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	return nil
 }
 
+// Send a message towards a layout
 func (ma *MessageAdapter) Send(msg domain.Msg) error {
 	return ma.sender.Send(msg)
 }
