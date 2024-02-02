@@ -1,11 +1,11 @@
-package core
+package adapters
 
 // The MessageSender interface allows sending off any struct that can become a specific type of message
 type MessageSender[T any] interface {
 	Send(m Msger[T]) error
 }
 
-type BridgeSender[T any] interface {
+type bridgeSender[T any] interface {
 	Send(m T) error
 }
 

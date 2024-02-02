@@ -10,23 +10,22 @@ type FakeBridge struct {
 	Returner MessageReceiver
 }
 
+func (f *FakeBridge) AddReceiver(r MessageReceiver) {
+	f.Returner = r
+}
 func (f *FakeBridge) Send(m domain.Msg) error {
 	fmt.Println("IN", m)
 	r := m
 	if m.Type == 2 {
 		r.Type = 3
 	}
-	err := f.Returner.Receive(r)
-	if err != nil {
-		return err
-	}
+	go f.Returner.Receive(r)
+
 	return nil
 }
 
-func NewFakeBridge(cc MessageReceiver) *FakeBridge {
-	bridge := FakeBridge{
-		Returner: cc,
-	}
+func NewFakeBridge() *FakeBridge {
+	bridge := FakeBridge{}
 	return &bridge
 }
 func (f *FakeBridge) Handle() {

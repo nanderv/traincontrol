@@ -4,12 +4,15 @@ import (
 	"github.com/dsyx/serialport-go"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
+	"sync"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type SerialBridge struct {
 	returners []MessageReceiver
 	port      *serialport.SerialPort
+
+	sync.Mutex
 }
 
 func (f *SerialBridge) AddReceiver(r MessageReceiver) {
@@ -17,6 +20,10 @@ func (f *SerialBridge) AddReceiver(r MessageReceiver) {
 }
 
 func (f *SerialBridge) Send(m domain.Msg) error {
+	slog.Info("OUTBOUND", "message", m)
+	f.Lock()
+	defer f.Unlock()
+
 	encoded := m.Encode()
 	_, err := f.port.Write(encoded[:])
 	if err != nil {
@@ -72,11 +79,10 @@ func (f *SerialBridge) Handle() {
 	}
 }
 func NewSerialBridge() *SerialBridge {
-	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())
+	port, err := serialport.Open("/dev/ttyACM1", serialport.DefaultConfig())
 	if err != nil {
 		slog.Error("couldn't open serial conn", err)
 	}
 
-	slog.Info("HERE")
 	return &SerialBridge{port: port}
 }
