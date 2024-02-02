@@ -3,18 +3,18 @@ package web
 import (
 	"context"
 	"encoding/json"
-	"github.com/nanderv/traincontrol-prototype/internal/core"
-	"github.com/nanderv/traincontrol-prototype/internal/core/domain/layout"
+	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
+	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/layout"
 	"io"
 )
 
 type LayoutAdapter struct {
-	c  *core.Core
+	c  *traintracks.TrackService
 	ch *chan layout.Layout
 	h  io.Writer
 }
 
-func NewLayoutAdapter(c *core.Core, h io.Writer) *LayoutAdapter {
+func NewLayoutAdapter(c *traintracks.TrackService, h io.Writer) *LayoutAdapter {
 	return &LayoutAdapter{
 		c:  c,
 		ch: c.AddNewReturnChannel(),

@@ -1,10 +1,19 @@
 package subcodes
 
-const Announce = 1
-const AckAnnounce = 2
-const ConfirmAckAnnounce = 3
+const (
+	Announce           = 1
+	AckAnnounce        = 2
+	ConfirmAckAnnounce = 3
 
-const LightOn = 16
-const AckLightOn = 17
-const LightOff = 18
-const AckLightOff = 19
+	LightOn     = 16
+	AckLightOn  = 17
+	LightOff    = 18
+	AckLightOff = 19
+)
+
+const (
+	StatusNew = 1
+
+	StatusUpdating = 128
+	StatusRunning  = 254
+)
