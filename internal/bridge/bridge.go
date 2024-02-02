@@ -27,7 +27,6 @@ func (f *SerialBridge) Send(m domain.Msg) error {
 }
 
 func (f *SerialBridge) Handle() {
-	slog.Info("handling")
 	var throughrun = make([]byte, 0)
 	for {
 		bytes := make([]byte, 16)
