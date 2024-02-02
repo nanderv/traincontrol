@@ -69,8 +69,8 @@ func (c *Core) sendToBridges(msg Msger[domain.Msg]) error {
 }
 func (c *Core) SetSwitchEvent(msg commands.SetSwitchResult) {
 	for i, sw := range c.layout.TrackSwitches {
-		if sw.Number == msg.SetSwitch.switchID {
-			c.layout.TrackSwitches[i].Direction = msg.SetSwitch.direction
+		if msg.SetSwitch.IsSwitch(sw.Number) {
+			c.layout.TrackSwitches[i].Direction = msg.SetSwitch.GetDirection()
 		}
 	}
 	c.notify()
