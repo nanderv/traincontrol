@@ -4,36 +4,33 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
-	"github.com/nanderv/traincontrol-prototype/internal/core"
-	"github.com/nanderv/traincontrol-prototype/internal/core/domain/commands"
+	"github.com/nanderv/traincontrol-prototype/internal/hwconfig"
 	"log/slog"
 )
 
 type MessageAdapter struct {
-	core   *core.Core
-	sender core.MessageSender
+	core   *hwconfig.HwConfigurator
+	sender hwconfig.BridgeSender[domain.Msg]
 }
 
 // Receive a message from a layout
 func (ma *MessageAdapter) Receive(msg domain.Msg) error {
-	slog.Info("INCOMING", "Data", msg)
-
-	switch msg.Type {
-	case codes.HW:
+	if msg.Type != codes.HW {
 		return nil
-	case codes.SwitchResult:
-		c := commands.SetSwitchResult{SetSwitch: commands.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
-		ma.core.SetSwitchEvent(c)
+	}
+	switch msg.Val[0] {
+	case 1:
+		slog.Info("NODE REGISTERED", "Mac", [3]byte{msg.Val[1], msg.Val[2], msg.Val[3]})
 	}
 	return nil
 }
 
 // Send a message towards a layout
-func (ma *MessageAdapter) Send(msg domain.Msg) error {
-	return ma.sender.Send(msg)
+func (ma *MessageAdapter) Send(msg hwconfig.Msger[domain.Msg]) error {
+	return ma.sender.Send(msg.ToBridgeMsg())
 }
 
-func NewMessageAdapter(c *core.Core, b *bridge.SerialBridge) *MessageAdapter {
+func NewMessageAdapter(c *hwconfig.HwConfigurator, b *bridge.SerialBridge) *MessageAdapter {
 	m := MessageAdapter{core: c, sender: b}
 	c.AddCommandBridge(&m)
 	b.AddReceiver(&m)
