@@ -1,6 +1,7 @@
 package traintracks
 
 import (
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
@@ -13,11 +14,11 @@ import (
 type MessageAdapter struct {
 	core *traintracks.TrackService
 
-	sender    bridgeSender[domain.Msg]
+	sender    bridge.Bridge
 	listeners map[*chan domain.Msg]struct{}
 }
 
-func NewMessageAdapter(svc *traintracks.TrackService, bridge Bridge) *MessageAdapter {
+func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *MessageAdapter {
 	m := MessageAdapter{core: svc, sender: bridge, listeners: make(map[*chan domain.Msg]struct{})}
 	svc.SetLayoutSender(&m)
 	bridge.AddReceiver(&m)
