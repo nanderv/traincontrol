@@ -56,6 +56,7 @@ func (c *HwConfigurator) sendToBridges(msg domain.Msg) error {
 }
 func (c *HwConfigurator) sendNodeNfo(nde node) {
 	slog.Info("New Addr", "Mac", nde.Mac, "Addr", nde.Addr)
+
 }
 
 func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
@@ -79,8 +80,8 @@ func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
 }
 
 func (c *HwConfigurator) getNodeByMac(mac [3]byte) (bool, node) {
-	no, ok := c.nodes[mac]
-	return ok, no
+	nde, ok := c.nodes[mac]
+	return ok, nde
 }
 
 func (c *HwConfigurator) newNodeWithPreferredAddr(mac [3]byte, prefAddr byte) node {

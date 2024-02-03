@@ -7,7 +7,7 @@ import (
 )
 
 type TrackService struct {
-	layoutBridge         LayoutSender
+	layoutBridge         Sender
 	notifyChangeChannels []*chan layout2.Layout
 	layout               layout2.Layout
 }
@@ -18,7 +18,7 @@ func (svc *TrackService) AddNewReturnChannel() *chan layout2.Layout {
 	return &ch
 }
 
-func (svc *TrackService) SetLayoutSender(cc LayoutSender) {
+func (svc *TrackService) SetLayoutSender(cc Sender) {
 	svc.layoutBridge = cc
 	return
 }
