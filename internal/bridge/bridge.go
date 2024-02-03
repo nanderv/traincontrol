@@ -1,16 +1,19 @@
 package bridge
 
 import (
+	"errors"
 	"github.com/dsyx/serialport-go"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
 	"sync"
+	"time"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type SerialBridge struct {
 	returners []MessageReceiver
 	port      *serialport.SerialPort
+	listeners map[*chan domain.Msg]struct{}
 
 	sync.Mutex
 }
@@ -31,7 +34,7 @@ func NewSerialBridge() *SerialBridge {
 		}
 	}
 
-	return &SerialBridge{port: port}
+	return &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{})}
 }
 
 func (f *SerialBridge) AddReceiver(r MessageReceiver) {
@@ -69,9 +72,7 @@ func (f *SerialBridge) readMessageBytes() []byte {
 	if err != nil {
 		slog.Error("could not read", err)
 	}
-
-	bytes = bytes[:n]
-	return bytes
+	return bytes[:n]
 }
 
 func (f *SerialBridge) handleMessageFromBuffer(byteBuffer []byte) []byte {
@@ -80,28 +81,24 @@ func (f *SerialBridge) handleMessageFromBuffer(byteBuffer []byte) []byte {
 	if messageBytesCorrect {
 		f.handleReceivedMessage(msg)
 	}
-
-	byteBuffer = byteBuffer[numBytesRead:]
-
-	return byteBuffer
+	return byteBuffer[numBytesRead:]
 }
 
 func getRawMessage(byteBuffer []byte) (bool, domain.RawMsg, int) {
 	counter := 0
 	var msg = domain.RawMsg{}
-	correct := true
+
 	for i, v := range byteBuffer {
 		counter = i + 1
 		msg[i] = v
 		if !domain.ValidChar(v) {
-			correct = false
-			break
+			return false, msg, counter
 		}
 		if i >= domain.RawSize-1 {
-			break
+			return true, msg, counter
 		}
 	}
-	return correct, msg, counter
+	return false, msg, counter
 }
 
 func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
@@ -113,9 +110,74 @@ func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
 	slog.Info("message received and sent on", "msg", msg)
 	for _, r := range f.returners {
 		err = r.Receive(mm)
-
 		if err != nil {
-			slog.Error("incorrect message", err)
+			slog.Error("message receiving failed", "err", err, "input", r)
 		}
+	}
+
+	f.sendToListeners(mm)
+
+}
+
+func (f *SerialBridge) SendMessageWithConfirmationAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error {
+	lner := f.addListener()
+	defer f.removeListener(lner)
+	for retries > 0 {
+		isConfirmed, err := f.sendMessageWithConfirmation(lner, msg, checker, timeout)
+		if err != nil {
+			retries--
+			slog.Warn("Error found", "err", err)
+		}
+		if isConfirmed {
+			return nil
+		}
+	}
+
+	return errors.New("out of retries")
+}
+
+func (f *SerialBridge) sendMessageWithConfirmation(listener *chan domain.Msg, msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration) (bool, error) {
+	err := f.Send(msg)
+	if err != nil {
+		return false, err
+	}
+
+	select {
+	case resultMsg := <-*listener:
+		if checker(resultMsg) {
+			slog.Info("Done direction", "message", resultMsg)
+			return true, nil
+		} else {
+			slog.Info("Message received, but irrelevant", "message", resultMsg)
+		}
+	case <-time.After(timeout):
+		slog.Warn("timeout while sending ", "message", msg)
+		return false, errors.New("out of time")
+	}
+
+	return false, nil
+}
+
+func (f *SerialBridge) addListener() *chan domain.Msg {
+	f.Lock()
+	defer f.Unlock()
+
+	ch := make(chan domain.Msg)
+	f.listeners[&ch] = struct{}{}
+	return &ch
+}
+
+func (f *SerialBridge) removeListener(ch *chan domain.Msg) {
+	f.Lock()
+	defer f.Unlock()
+
+	delete(f.listeners, ch)
+}
+
+func (f *SerialBridge) sendToListeners(msg domain.Msg) {
+	f.Lock()
+	defer f.Unlock()
+	for lnr, _ := range f.listeners {
+		*lnr <- msg
 	}
 }

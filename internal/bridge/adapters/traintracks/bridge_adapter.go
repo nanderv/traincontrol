@@ -2,7 +2,6 @@ package traintracks
 
 import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
@@ -17,12 +16,10 @@ type MessageAdapter struct {
 
 	trackService *traintracks.TrackService
 	sender       bridge.Bridge
-
-	listeners map[*chan domain.Msg]struct{}
 }
 
 func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *MessageAdapter {
-	m := MessageAdapter{trackService: svc, sender: bridge, listeners: make(map[*chan domain.Msg]struct{})}
+	m := MessageAdapter{trackService: svc, sender: bridge}
 	svc.SetLayoutSender(&m)
 	bridge.AddReceiver(&m)
 	return &m
@@ -31,7 +28,6 @@ func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *Mes
 // Receive a message from a layout
 func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
 	slog.Info("INCOMING", "Data", msg)
-	adapt.sendToListeners(msg)
 
 	return adapt.handleReceivedMessage(msg)
 }
@@ -48,44 +44,13 @@ func (adapt *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
 }
 
 func (adapt *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
-	listener := adapt.addListener()
-	defer adapt.removeListener(listener)
-
 	msg := commands.NewSetSwitch(switchID, direction)
 
-	sender := adapters.Sender{
-		Bridge: adapt.sender,
-		ResultChecker: func(m domain.Msg) bool {
-			return m.Type == codes.SwitchResult && m.Val[0] == switchID && (m.Val[1] == 1) == direction
-		},
-		ListenChannel: listener,
+	checker := func(m domain.Msg) bool {
+		return m.Type == codes.SwitchResult && m.Val[0] == switchID && (m.Val[1] == 1) == direction
 	}
 
-	requestTimeout := 300 * time.Second
+	requestTimeout := 300 * time.Millisecond
 	retries := 10
-	return sender.SendMessageWithConfirmationAndRetries(msg.ToBridgeMsg(), requestTimeout, retries)
-}
-
-func (adapt *MessageAdapter) addListener() *chan domain.Msg {
-	adapt.Lock()
-	defer adapt.Unlock()
-
-	ch := make(chan domain.Msg)
-	adapt.listeners[&ch] = struct{}{}
-	return &ch
-}
-
-func (adapt *MessageAdapter) removeListener(ch *chan domain.Msg) {
-	adapt.Lock()
-	defer adapt.Unlock()
-
-	delete(adapt.listeners, ch)
-}
-
-func (adapt *MessageAdapter) sendToListeners(msg domain.Msg) {
-	adapt.Lock()
-	defer adapt.Unlock()
-	for lnr, _ := range adapt.listeners {
-		*lnr <- msg
-	}
+	return adapt.sender.SendMessageWithConfirmationAndRetries(msg.ToBridgeMsg(), checker, requestTimeout, retries)
 }
