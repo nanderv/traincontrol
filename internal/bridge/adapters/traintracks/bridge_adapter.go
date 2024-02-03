@@ -45,18 +45,22 @@ func (ma *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
 }
 
 func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
-	retriesRemaining := 10
-
 	cha := ma.addListener()
 	defer ma.removeListener(cha)
 
 	msg := commands.NewSetSwitch(switchID, direction)
 
-	resultChecker := func(m domain.Msg) bool {
-		return m.Type == 3 && m.Val[0] == switchID && (m.Val[1] == 1) == direction
+	sender := adapters.Sender{
+		Bridge: ma.sender,
+		ResultChecker: func(m domain.Msg) bool {
+			return m.Type == 3 && m.Val[0] == switchID && (m.Val[1] == 1) == direction
+		},
+		CollectChannel: cha,
 	}
 
-	return adapters.SendMessageWithConfirmationAndRetries(ma.sender.Send, cha, resultChecker, msg.ToBridgeMsg(), retriesRemaining, 500*time.Millisecond)
+	requestTimeout := 500 * time.Millisecond
+	retriesRemaining := 10
+	return adapters.SendMessageWithConfirmationAndRetries(sender, msg.ToBridgeMsg(), requestTimeout, retriesRemaining)
 }
 
 func (ma *MessageAdapter) addListener() *chan domain.Msg {
