@@ -59,8 +59,8 @@ func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) erro
 	}
 
 	requestTimeout := 500 * time.Millisecond
-	retriesRemaining := 10
-	return adapters.SendMessageWithConfirmationAndRetries(sender, msg.ToBridgeMsg(), requestTimeout, retriesRemaining)
+	retries := 10
+	return adapters.SendMessageWithConfirmationAndRetries(sender, msg.ToBridgeMsg(), requestTimeout, retries)
 }
 
 func (ma *MessageAdapter) addListener() *chan domain.Msg {
