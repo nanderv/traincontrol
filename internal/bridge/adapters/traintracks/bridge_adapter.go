@@ -52,5 +52,5 @@ func (adapt *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) e
 
 	requestTimeout := 300 * time.Millisecond
 	retries := 10
-	return adapt.sender.SendMessageWithConfirmationAndRetries(msg.ToBridgeMsg(), checker, requestTimeout, retries)
+	return adapt.sender.SendWithResponseChecksAndRetries(msg.ToBridgeMsg(), checker, requestTimeout, retries)
 }

@@ -119,7 +119,7 @@ func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
 
 }
 
-func (f *SerialBridge) SendMessageWithConfirmationAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error {
+func (f *SerialBridge) SendWithResponseChecksAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error {
 	lner := f.addListener()
 	defer f.removeListener(lner)
 	for retries > 0 {
