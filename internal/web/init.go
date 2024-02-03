@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	"github.com/nanderv/traincontrol-prototype/internal/web/view/rails"
+	"github.com/nanderv/traincontrol-prototype/internal/web/view/base"
 	"log"
 	"net/http"
 )
@@ -40,11 +40,11 @@ func act(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
-	rails.Display().Render(context.Background(), w)
+	base.Display().Render(context.Background(), w)
 }
 func Init(ctx context.Context, c *traintracks.TrackService) error {
 	// Add file server
-	fs := http.FileServer(http.Dir("webroot/"))
+	fs := http.FileServer(http.Dir("web/static/"))
 	http.Handle("/", http.StripPrefix("/", fs))
 	http.HandleFunc("/test", handle)
 
