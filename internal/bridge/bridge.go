@@ -15,6 +15,7 @@ type SerialBridge struct {
 	sync.Mutex
 }
 
+// NewSerialBridge sets up a Serial bridge. It is kinda garbage, but it works on my machine :).
 func NewSerialBridge() *SerialBridge {
 	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())
 	if err != nil {
