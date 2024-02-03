@@ -24,8 +24,8 @@ func main() {
 
 	traintracks2.NewMessageAdapter(c, bridg)
 
-	hwConf := hwconfig.HwConfigurator{}
-	hwAdapters.NewMessageAdapter(&hwConf, bridg)
+	hwConf := hwconfig.NewHWConfigurator()
+	hwAdapters.NewMessageAdapter(hwConf, bridg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -39,15 +39,6 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
-
-	err = c.SetSwitchAction(1, true)
-	if err != nil {
-		slog.Error("Could not set switch", "error", err)
-	}
-	err = c.SetSwitchAction(1, false)
-	if err != nil {
-		slog.Error("Could not set switch", "error", err)
-	}
 
 	time.Sleep(1 * time.Hour)
 }
