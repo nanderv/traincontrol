@@ -33,7 +33,7 @@ func (f *FakeBridge) Send(m domain.Msg) error {
 
 	return nil
 }
-func (f *FakeBridge) SendMessageWithConfirmationAndRetries(msg domain.Msg, _ func(msg domain.Msg) bool, _ time.Duration, _ int) error {
+func (f *FakeBridge) SendWithResponseChecksAndRetries(msg domain.Msg, _ func(msg domain.Msg) bool, _ time.Duration, _ int) error {
 	return f.Send(msg)
 }
 func NewFakeBridge() *FakeBridge {
