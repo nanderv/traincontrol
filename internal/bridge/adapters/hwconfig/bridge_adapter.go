@@ -1,7 +1,7 @@
 package hwconfig
 
 import (
-	"github.com/nanderv/traincontrol-prototype/internal/bridge/adapters/traintracks"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/hwconfig"
@@ -10,7 +10,7 @@ import (
 
 type MessageAdapter struct {
 	core   *hwconfig.HwConfigurator
-	sender traintracks.Bridge
+	sender bridge.Bridge
 }
 
 // Receive a message from a layout
@@ -31,7 +31,7 @@ func (ma *MessageAdapter) Send(msg domain.Msg) error {
 	return ma.sender.Send(msg)
 }
 
-func NewMessageAdapter(c *hwconfig.HwConfigurator, b traintracks.Bridge) *MessageAdapter {
+func NewMessageAdapter(c *hwconfig.HwConfigurator, b bridge.Bridge) *MessageAdapter {
 	m := MessageAdapter{core: c, sender: b}
 	c.AddCommandBridge(&m)
 	b.AddReceiver(&m)
