@@ -28,7 +28,7 @@ func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *Mes
 // Receive a message from a layout
 func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	slog.Info("INCOMING", "Data", msg)
-	ma.sendToListners(msg)
+	ma.sendToListeners(msg)
 
 	return ma.handleReceivedMessage(msg)
 }
@@ -53,7 +53,7 @@ func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) erro
 	sender := adapters.Sender{
 		Bridge: ma.sender,
 		ResultChecker: func(m domain.Msg) bool {
-			return m.Type == 3 && m.Val[0] == switchID && (m.Val[1] == 1) == direction
+			return m.Type == codes.SwitchResult && m.Val[0] == switchID && (m.Val[1] == 1) == direction
 		},
 		CollectChannel: cha,
 	}
@@ -73,7 +73,7 @@ func (ma *MessageAdapter) removeListener(ch *chan domain.Msg) {
 	delete(ma.listeners, ch)
 	return
 }
-func (ma *MessageAdapter) sendToListners(msg domain.Msg) {
+func (ma *MessageAdapter) sendToListeners(msg domain.Msg) {
 	for lnr, _ := range ma.listeners {
 		*lnr <- msg
 	}
