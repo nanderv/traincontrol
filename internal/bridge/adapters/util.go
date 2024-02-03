@@ -16,13 +16,13 @@ type Sender struct {
 
 func SendMessageWithConfirmationAndRetries(sender Sender, msg domain.Msg, timeout time.Duration, retriesRemaining int) error {
 	for retriesRemaining > 0 {
-		isHandled, err := sendMessageWithConfirmation(sender, msg, timeout)
+		messageConfirmed, err := sendMessageWithConfirmation(sender, msg, timeout)
 
 		if err != nil {
 			retriesRemaining--
 			slog.Warn("Error found", "err", err)
 		}
-		if isHandled {
+		if messageConfirmed {
 			return nil
 		}
 	}
