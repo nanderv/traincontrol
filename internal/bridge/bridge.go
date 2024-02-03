@@ -129,7 +129,6 @@ func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
 	}
 
 	f.sendToListeners(mm)
-
 }
 
 func (f *SerialBridge) SendWithResponseChecksAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error {

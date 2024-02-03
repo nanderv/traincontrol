@@ -1,7 +1,7 @@
 package hwconfig
 
-import "github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+import "github.com/nanderv/traincontrol-prototype/internal/hwconfig/domain/node"
 
-type BridgeSender[T domain.Msg] interface {
-	Send(m domain.Msg) error
+type BridgeSender interface {
+	SendNodeInfoUpdate(node node.Node) error
 }
