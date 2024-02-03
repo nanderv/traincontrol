@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dsyx/serialport-go"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
@@ -120,7 +121,8 @@ func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
 		slog.Error("incorrect message", err)
 		return
 	}
-	slog.Info("message received and sent on", "msg", msg)
+
+	slog.Info("message received and sent on", "message", fmt.Sprintf("%v", mm))
 	for _, r := range f.returners {
 		err = r.Receive(mm)
 		if err != nil {
