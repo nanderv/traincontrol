@@ -5,6 +5,7 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/hwconfig"
+	"github.com/nanderv/traincontrol-prototype/internal/hwconfig/domain/node"
 	"log/slog"
 )
 
@@ -30,10 +31,13 @@ func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 func (ma *MessageAdapter) Send(msg domain.Msg) error {
 	return ma.sender.Send(msg)
 }
-
-func NewMessageAdapter(c *hwconfig.HwConfigurator, b bridge.Bridge) *MessageAdapter {
-	m := MessageAdapter{core: c, sender: b}
-	c.AddCommandBridge(&m)
+func (ma *MessageAdapter) SendNodeInfoUpdate(node node.Node) error {
+	slog.Info("Sending node info for node", "node", node)
+	return nil
+}
+func NewMessageAdapter(hwConfig *hwconfig.HwConfigurator, b bridge.Bridge) *MessageAdapter {
+	m := MessageAdapter{core: hwConfig, sender: b}
+	hwConfig.SetBridgeAdapter(&m)
 	b.AddReceiver(&m)
 	return &m
 }

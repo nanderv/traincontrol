@@ -6,7 +6,6 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/commands"
-	"log/slog"
 	"time"
 )
 
@@ -24,12 +23,6 @@ func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *Mes
 
 // Receive a message from a layout
 func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
-	slog.Info("INCOMING", "Data", msg)
-
-	return adapt.handleReceivedMessage(msg)
-}
-
-func (adapt *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
 	switch msg.Type {
 	case codes.HW:
 		return nil
