@@ -1,7 +1,7 @@
-package adapters
+package traintracks
 
 import (
-	"errors"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain/codes"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
@@ -26,17 +26,19 @@ func NewMessageAdapter(svc *traintracks.TrackService, bridge Bridge) *MessageAda
 
 // Receive a message from a layout
 func (ma *MessageAdapter) Receive(msg domain.Msg) error {
-	for lnr, _ := range ma.listeners {
-		*lnr <- msg
-	}
 	slog.Info("INCOMING", "Data", msg)
+	ma.sendToListners(msg)
 
+	return ma.handleReceivedMessage(msg)
+}
+
+func (ma *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
 	switch msg.Type {
 	case codes.HW:
 		return nil
 	case codes.SwitchResult:
 		c := commands.SetSwitchResult{SetSwitch: commands.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
-		ma.core.SetSwitchEvent(c)
+		ma.core.UpdateSwitchState(c)
 	}
 	return nil
 }
@@ -49,29 +51,11 @@ func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) erro
 
 	msg := commands.NewSetSwitch(switchID, direction)
 
-	for retriesRemaining > 0 {
-		err := ma.sender.Send(msg.ToBridgeMsg())
-		if err != nil {
-			return err
-		}
-		retriesRemaining--
-		select {
-		case resultMsg := <-*cha:
-			if resultMsg.Type == 3 && resultMsg.Val[0] == switchID && (resultMsg.Val[1] == 1) == direction {
-				slog.Info("Done direction", "message", resultMsg)
-				return nil
-			} else {
-				// Correctly arrived messages that are not the right one don't count towards retry counter
-				slog.Debug("Message received, but irrelevant", "message", resultMsg)
-				retriesRemaining += 1
-			}
-		case <-time.After(500 * time.Millisecond):
-			slog.Warn("timeout while sending ", "message", msg.ToBridgeMsg())
-			break
-		}
+	resultChecker := func(m domain.Msg) bool {
+		return m.Type == 3 && m.Val[0] == switchID && (m.Val[1] == 1) == direction
 	}
 
-	return errors.New("out of retries")
+	return adapters.SendMessageWithConfirmationAndRetries(ma.sender.Send, cha, resultChecker, msg.ToBridgeMsg(), retriesRemaining, 500*time.Millisecond)
 }
 
 func (ma *MessageAdapter) addListener() *chan domain.Msg {
@@ -83,4 +67,9 @@ func (ma *MessageAdapter) addListener() *chan domain.Msg {
 func (ma *MessageAdapter) removeListener(ch *chan domain.Msg) {
 	delete(ma.listeners, ch)
 	return
+}
+func (ma *MessageAdapter) sendToListners(msg domain.Msg) {
+	for lnr, _ := range ma.listeners {
+		*lnr <- msg
+	}
 }
