@@ -34,49 +34,72 @@ func (f *SerialBridge) Send(m domain.Msg) error {
 }
 
 func (f *SerialBridge) Handle() {
-	var throughrun = make([]byte, 0)
+	var byteBuffer = make([]byte, 0)
 	for {
-		bytes := make([]byte, 16)
-		n, err := f.port.Read(bytes)
-		bytes = bytes[:n]
-		if err != nil {
-			slog.Error("could not read", err)
+		bytes := f.readMessageBytes()
 
-		}
-		throughrun = append(throughrun, bytes...)
-		counter := 0
+		byteBuffer = append(byteBuffer, bytes...)
 
-		for len(throughrun) > domain.RawSize {
-			correct := true
-			msg := domain.RawMsg{}
-			for i, v := range throughrun {
-				counter = i + 1
-				msg[i] = v
-				if !domain.ValidChar(v) {
-					correct = false
-					break
-				}
-				if i >= domain.RawSize-1 {
-					break
-				}
-			}
-			throughrun = throughrun[counter:]
+		byteBuffer = f.readWholeMessageBuffer(byteBuffer)
+	}
+}
 
-			if correct {
-				mm, err := msg.Decode()
-				if err != nil {
-					slog.Error("incorrect message", err)
-					continue
-				}
-				for _, r := range f.returners {
-					err = r.Receive(mm)
-					if err != nil {
-						slog.Error("incorrect message", err)
-					}
-				}
-			}
+func (f *SerialBridge) readWholeMessageBuffer(byteBuffer []byte) []byte {
+	for len(byteBuffer) > domain.RawSize {
+		messageBytesCorrect, msg, numBytesRead := getRawMessage(byteBuffer)
+
+		byteBuffer = byteBuffer[numBytesRead:]
+
+		if messageBytesCorrect {
+			f.handleReceivedMessage(msg)
 		}
 	}
+	return byteBuffer
+}
+
+func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
+	mm, err := msg.Decode()
+	if err != nil {
+		slog.Error("incorrect message", err)
+		return
+	}
+	slog.Info("message received and sent on", "msg", msg)
+	for _, r := range f.returners {
+		err = r.Receive(mm)
+
+		if err != nil {
+			slog.Error("incorrect message", err)
+		}
+	}
+}
+
+func (f *SerialBridge) readMessageBytes() []byte {
+	bytes := make([]byte, 16)
+	n, err := f.port.Read(bytes)
+	if err != nil {
+		slog.Error("could not read", err)
+	}
+
+	bytes = bytes[:n]
+	return bytes
+}
+
+func getRawMessage(byteBuffer []byte) (bool, domain.RawMsg, int) {
+	counter := 0
+	var msg = domain.RawMsg{}
+	correct := true
+	for i, v := range byteBuffer {
+		counter = i + 1
+		msg[i] = v
+		if !domain.ValidChar(v) {
+			correct = false
+			break
+		}
+		if i >= domain.RawSize-1 {
+			break
+		}
+	}
+	return correct, msg, counter
 }
 func NewSerialBridge() *SerialBridge {
 	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())

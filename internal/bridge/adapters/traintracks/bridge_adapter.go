@@ -8,73 +8,84 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/commands"
 	"log/slog"
+	"sync"
 	"time"
 )
 
 type MessageAdapter struct {
-	core *traintracks.TrackService
+	sync.Mutex
 
-	sender    bridge.Bridge
+	trackService *traintracks.TrackService
+	sender       bridge.Bridge
+
 	listeners map[*chan domain.Msg]struct{}
 }
 
 func NewMessageAdapter(svc *traintracks.TrackService, bridge bridge.Bridge) *MessageAdapter {
-	m := MessageAdapter{core: svc, sender: bridge, listeners: make(map[*chan domain.Msg]struct{})}
+	m := MessageAdapter{trackService: svc, sender: bridge, listeners: make(map[*chan domain.Msg]struct{})}
 	svc.SetLayoutSender(&m)
 	bridge.AddReceiver(&m)
 	return &m
 }
 
 // Receive a message from a layout
-func (ma *MessageAdapter) Receive(msg domain.Msg) error {
+func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
 	slog.Info("INCOMING", "Data", msg)
-	ma.sendToListeners(msg)
+	adapt.sendToListeners(msg)
 
-	return ma.handleReceivedMessage(msg)
+	return adapt.handleReceivedMessage(msg)
 }
 
-func (ma *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
+func (adapt *MessageAdapter) handleReceivedMessage(msg domain.Msg) error {
 	switch msg.Type {
 	case codes.HW:
 		return nil
 	case codes.SwitchResult:
 		c := commands.SetSwitchResult{SetSwitch: commands.NewSetSwitch(msg.Val[0], msg.Val[1] == 1)}
-		ma.core.UpdateSwitchState(c)
+		adapt.trackService.UpdateSwitchState(c)
 	}
 	return nil
 }
 
-func (ma *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
-	cha := ma.addListener()
-	defer ma.removeListener(cha)
+func (adapt *MessageAdapter) SetSwitchDirection(switchID byte, direction bool) error {
+	listener := adapt.addListener()
+	defer adapt.removeListener(listener)
 
 	msg := commands.NewSetSwitch(switchID, direction)
 
 	sender := adapters.Sender{
-		Bridge: ma.sender,
+		Bridge: adapt.sender,
 		ResultChecker: func(m domain.Msg) bool {
 			return m.Type == codes.SwitchResult && m.Val[0] == switchID && (m.Val[1] == 1) == direction
 		},
-		CollectChannel: cha,
+		ListenChannel: listener,
 	}
 
-	requestTimeout := 500 * time.Millisecond
+	requestTimeout := 300 * time.Second
 	retries := 10
-	return adapters.SendMessageWithConfirmationAndRetries(sender, msg.ToBridgeMsg(), requestTimeout, retries)
+	return sender.SendMessageWithConfirmationAndRetries(msg.ToBridgeMsg(), requestTimeout, retries)
 }
 
-func (ma *MessageAdapter) addListener() *chan domain.Msg {
+func (adapt *MessageAdapter) addListener() *chan domain.Msg {
+	adapt.Lock()
+	defer adapt.Unlock()
+
 	ch := make(chan domain.Msg)
-	ma.listeners[&ch] = struct{}{}
+	adapt.listeners[&ch] = struct{}{}
 	return &ch
 }
 
-func (ma *MessageAdapter) removeListener(ch *chan domain.Msg) {
-	delete(ma.listeners, ch)
-	return
+func (adapt *MessageAdapter) removeListener(ch *chan domain.Msg) {
+	adapt.Lock()
+	defer adapt.Unlock()
+
+	delete(adapt.listeners, ch)
 }
-func (ma *MessageAdapter) sendToListeners(msg domain.Msg) {
-	for lnr, _ := range ma.listeners {
+
+func (adapt *MessageAdapter) sendToListeners(msg domain.Msg) {
+	adapt.Lock()
+	defer adapt.Unlock()
+	for lnr, _ := range adapt.listeners {
 		*lnr <- msg
 	}
 }
