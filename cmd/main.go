@@ -20,7 +20,8 @@ func main() {
 	c, err := traintracks.NewCore(traintracks.WithTrackSwitch(1), traintracks.WithTrackSwitch(2), traintracks.WithTrackSwitch(3))
 
 	bridg := bridge.NewSerialBridge()
-	go bridg.Handle()
+	go bridg.IncomingHandler()
+	go bridg.OutgoingHandler()
 
 	traintracks2.NewMessageAdapter(c, bridg)
 
@@ -39,6 +40,8 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
-
+	c.SetSwitchAction(2, true)
+	c.SetSwitchAction(2, true)
+	c.SetSwitchAction(2, true)
 	time.Sleep(1 * time.Hour)
 }
