@@ -54,6 +54,7 @@ func (f *SerialBridge) Send(m domain.Msg) error {
 
 	return nil
 }
+
 func (f *SerialBridge) OutgoingHandler() {
 	for {
 		select {
@@ -66,6 +67,7 @@ func (f *SerialBridge) OutgoingHandler() {
 		}
 	}
 }
+
 func (f *SerialBridge) IncomingHandler() {
 	var buffer = make([]byte, 0)
 	for {
