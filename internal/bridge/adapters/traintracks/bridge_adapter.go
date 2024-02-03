@@ -7,13 +7,10 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/commands"
 	"log/slog"
-	"sync"
 	"time"
 )
 
 type MessageAdapter struct {
-	sync.Mutex
-
 	trackService *traintracks.TrackService
 	sender       bridge.Bridge
 }
