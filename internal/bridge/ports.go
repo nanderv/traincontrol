@@ -12,5 +12,5 @@ type MessageReceiver interface {
 type Bridge interface {
 	AddReceiver(MessageReceiver)
 	Send(domain.Msg) error
-	SendMessageWithConfirmationAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error
+	SendWithResponseChecksAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error
 }
