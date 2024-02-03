@@ -37,7 +37,7 @@ func NewCore(configurator ...Configurator) (*TrackService, error) {
 	return &c, nil
 }
 
-func (svc *TrackService) SetSwitchAction(switchID byte, direction bool) error {
+func (svc *TrackService) SetSwitchDirection(switchID byte, direction bool) error {
 	var found bool
 	for _, sw := range svc.layout.TrackSwitches {
 		if sw.Number == switchID {
