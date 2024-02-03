@@ -11,11 +11,13 @@ import (
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type SerialBridge struct {
+	sync.Mutex
+
 	returners []MessageReceiver
 	port      *serialport.SerialPort
 	listeners map[*chan domain.Msg]struct{}
 
-	sync.Mutex
+	outboundChan *chan domain.Msg
 }
 
 // NewSerialBridge sets up a Serial bridge. It is kinda garbage, but it works on my machine :).
@@ -34,7 +36,8 @@ func NewSerialBridge() *SerialBridge {
 		}
 	}
 
-	return &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{})}
+	cha := make(chan domain.Msg)
+	return &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{}), outboundChan: &cha}
 }
 
 func (f *SerialBridge) AddReceiver(r MessageReceiver) {
@@ -43,19 +46,27 @@ func (f *SerialBridge) AddReceiver(r MessageReceiver) {
 
 func (f *SerialBridge) Send(m domain.Msg) error {
 	slog.Info("OUTBOUND", "message", m)
+
+	*f.outboundChan <- m
+
 	f.Lock()
 	defer f.Unlock()
 
-	encoded := m.Encode()
-	_, err := f.port.Write(encoded[:])
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
-
-func (f *SerialBridge) Handle() {
+func (f *SerialBridge) OutgoingHandler() {
+	for {
+		select {
+		case m := <-*f.outboundChan:
+			encoded := m.Encode()
+			_, err := f.port.Write(encoded[:])
+			if err != nil {
+				slog.Error("Message sending failed", "message", m, "err", err)
+			}
+		}
+	}
+}
+func (f *SerialBridge) IncomingHandler() {
 	var buffer = make([]byte, 0)
 	for {
 		buffer = append(buffer, f.readMessageBytes()...)

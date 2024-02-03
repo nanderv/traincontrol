@@ -1,5 +1,5 @@
 package traintracks
 
-type LayoutSender interface {
+type Sender interface {
 	SetSwitchDirection(switchID byte, direction bool) error
 }
