@@ -44,7 +44,6 @@ func (c *HwConfigurator) sendNodeNfo(nde node.Node) {
 }
 
 func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
-	slog.Info("Found node")
 	c.Lock()
 	defer c.Unlock()
 	foundNode, nde := c.getNodeByMac(mac)
@@ -52,14 +51,15 @@ func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
 	if !foundNode {
 		nde = c.newNodeWithPreferredAddr(mac, prefAddr)
 		c.nodes[nde.Mac] = nde
-		slog.Info("New Node", "Node", nde)
+		slog.Info("New Node", "Node", nde, "requested", prefAddr)
 	} else {
-		slog.Info("Welcome back", "Node", nde)
+		slog.Info("Welcome back", "Node", nde, "requested", prefAddr)
 	}
 
-	if prefAddr != nde.Addr {
+	if prefAddr != nde.Addr || !foundNode {
 		c.sendNodeNfo(nde)
 	} else {
+
 		// update to next phase
 	}
 }
