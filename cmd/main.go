@@ -19,7 +19,7 @@ func main() {
 
 	c, err := traintracks.NewCore(traintracks.WithTrackSwitch(1), traintracks.WithTrackSwitch(2), traintracks.WithTrackSwitch(3))
 
-	bridg := bridge.NewFakeBridge()
+	bridg := bridge.NewSerialBridge()
 	go bridg.Handle()
 
 	traintracks2.NewMessageAdapter(c, bridg)
