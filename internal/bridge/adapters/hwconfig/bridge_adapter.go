@@ -21,7 +21,7 @@ func (ma *MessageAdapter) Receive(msg domain.Msg) error {
 	switch msg.Val[0] {
 	case 1:
 		slog.Info("NODE REGISTERED", "Mac", [3]byte{msg.Val[1], msg.Val[2], msg.Val[3]}, "AddrRequested", msg.Val[4])
-		ma.core.AddNode([3]byte{msg.Val[1], msg.Val[2], msg.Val[3]}, msg.Val[4])
+		ma.core.HandleNodeAnnounce([3]byte{msg.Val[1], msg.Val[2], msg.Val[3]}, msg.Val[4])
 	}
 	return nil
 }

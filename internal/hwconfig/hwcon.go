@@ -2,21 +2,25 @@ package hwconfig
 
 import (
 	"errors"
-	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
+	"sync"
 )
 
 type node struct {
-	mac  [3]byte
-	addr byte
+	Mac  [3]byte
+	Addr byte
 }
 type HwConfigurator struct {
-	nodes []node
+	sync.Mutex
+	nodes map[[3]byte]node
 
 	bridges []BridgeSender[domain.Msg]
 }
 
+func NewHWConfigurator() *HwConfigurator {
+	return &HwConfigurator{nodes: make(map[[3]byte]node)}
+}
 func (c *HwConfigurator) AddCommandBridge(cc BridgeSender[domain.Msg]) {
 	c.bridges = append(c.bridges, cc)
 	return
@@ -25,7 +29,7 @@ func (c *HwConfigurator) firstFreeAddr() byte {
 	for i := byte(1); i < 255; i++ {
 		v := false
 		for _, no := range c.nodes {
-			if no.addr == i {
+			if no.Addr == i {
 				v = true
 			}
 		}
@@ -50,32 +54,45 @@ func (c *HwConfigurator) sendToBridges(msg domain.Msg) error {
 	}
 	return errOut
 }
-func (c *HwConfigurator) sendNodeNfo(mac [3]byte, initAddr byte) {
-	slog.Info("New addr", "mac", mac[:], "addr", initAddr)
+func (c *HwConfigurator) sendNodeNfo(nde node) {
+	slog.Info("New Addr", "Mac", nde.Mac, "Addr", nde.Addr)
 }
 
-func (c *HwConfigurator) AddNode(mac [3]byte, initAddr byte) {
-	reqAddr := initAddr
-	newNode := true
-	if reqAddr == 255 {
-		reqAddr = c.firstFreeAddr()
+func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
+	c.Lock()
+	defer c.Unlock()
+	foundNode, nde := c.getNodeByMac(mac)
+
+	if !foundNode {
+		nde = c.newNodeWithPreferredAddr(mac, prefAddr)
+		c.nodes[nde.Mac] = nde
+		slog.Info("New Node", "node", nde)
+	} else {
+		slog.Info("Welcome back", "node", nde)
 	}
+
+	if prefAddr != nde.Addr {
+		c.sendNodeNfo(nde)
+	} else {
+		// update to next phase
+	}
+}
+
+func (c *HwConfigurator) getNodeByMac(mac [3]byte) (bool, node) {
+	no, ok := c.nodes[mac]
+	return ok, no
+}
+
+func (c *HwConfigurator) newNodeWithPreferredAddr(mac [3]byte, prefAddr byte) node {
+	if prefAddr == 255 {
+		return node{Mac: mac, Addr: c.firstFreeAddr()}
+	}
+
 	for _, no := range c.nodes {
-		if no.mac == mac {
-			newNode = false
-			break
-		} else {
-			if no.addr == reqAddr {
-				reqAddr = c.firstFreeAddr()
-			}
+		if no.Addr == prefAddr && no.Mac != mac {
+			return node{Mac: mac, Addr: c.firstFreeAddr()}
 		}
 	}
-	if newNode {
-		fmt.Println("New Node")
-	} else {
-		fmt.Println("Welcome back")
-	}
-	c.sendNodeNfo(mac, reqAddr)
-	c.nodes = append(c.nodes, node{mac: mac, addr: reqAddr})
 
+	return node{Mac: mac, Addr: prefAddr}
 }

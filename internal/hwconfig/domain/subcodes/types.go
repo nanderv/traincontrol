@@ -1,9 +1,8 @@
 package subcodes
 
 const (
-	Announce           = 1
-	AckAnnounce        = 2
-	ConfirmAckAnnounce = 3
+	Announce    = 1
+	AckAnnounce = 2
 
 	LightOn     = 16
 	AckLightOn  = 17
