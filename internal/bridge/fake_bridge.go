@@ -3,6 +3,7 @@ package bridge
 import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
+	"time"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
@@ -32,11 +33,14 @@ func (f *FakeBridge) Send(m domain.Msg) error {
 
 	return nil
 }
-
+func (f *FakeBridge) SendMessageWithConfirmationAndRetries(msg domain.Msg, _ func(msg domain.Msg) bool, _ time.Duration, _ int) error {
+	return f.Send(msg)
+}
 func NewFakeBridge() *FakeBridge {
 	bridge := FakeBridge{}
 	return &bridge
 }
+
 func (f *FakeBridge) Handle() {
 	return
 }
