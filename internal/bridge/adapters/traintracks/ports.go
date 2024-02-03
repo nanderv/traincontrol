@@ -1,4 +1,4 @@
-package adapters
+package traintracks
 
 import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
