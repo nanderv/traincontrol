@@ -51,14 +51,13 @@ func (svc *TrackService) SetSwitchAction(switchID byte, direction bool) error {
 	return svc.layoutBridge.SetSwitchDirection(switchID, direction)
 }
 
-func (svc *TrackService) SetSwitchEvent(msg commands.SetSwitchResult) {
+func (svc *TrackService) UpdateSwitchState(msg commands.SetSwitchResult) {
 	for i, sw := range svc.layout.TrackSwitches {
 		if msg.SetSwitch.IsSwitch(sw.Number) {
 			svc.layout.TrackSwitches[i].Direction = msg.SetSwitch.GetDirection()
 		}
 	}
 	svc.notify()
-	fmt.Println(msg.String())
 }
 
 func (svc *TrackService) notify() {

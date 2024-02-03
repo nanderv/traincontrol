@@ -79,9 +79,18 @@ func (f *SerialBridge) Handle() {
 	}
 }
 func NewSerialBridge() *SerialBridge {
-	port, err := serialport.Open("/dev/ttyACM1", serialport.DefaultConfig())
+	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())
 	if err != nil {
-		slog.Error("couldn't open serial conn", err)
+		slog.Info("couldn't open serial conn", err)
+		port, err = serialport.Open("/dev/ttyACM1", serialport.DefaultConfig())
+		if err != nil {
+			slog.Info("couldn't open serial conn", err)
+			port, err = serialport.Open("/dev/ttyACM2", serialport.DefaultConfig())
+			if err != nil {
+				slog.Error("couldn't open serial conn", err)
+				return nil
+			}
+		}
 	}
 
 	return &SerialBridge{port: port}
