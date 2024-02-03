@@ -40,8 +40,6 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
-	c.SetSwitchAction(2, true)
-	c.SetSwitchAction(2, true)
-	c.SetSwitchAction(2, true)
+
 	time.Sleep(1 * time.Hour)
 }
