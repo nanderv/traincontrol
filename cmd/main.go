@@ -40,6 +40,11 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
-
+	for {
+		time.Sleep(5 * time.Second)
+		c.SetSwitchDirection(1, true)
+		time.Sleep(5 * time.Second)
+		c.SetSwitchDirection(1, false)
+	}
 	time.Sleep(1 * time.Hour)
 }
