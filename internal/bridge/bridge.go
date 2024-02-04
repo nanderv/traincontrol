@@ -49,10 +49,6 @@ func (f *SerialBridge) Send(m domain.Msg) error {
 	slog.Info("OUTBOUND", "message", m)
 
 	*f.outboundChan <- m
-
-	f.Lock()
-	defer f.Unlock()
-
 	return nil
 }
 

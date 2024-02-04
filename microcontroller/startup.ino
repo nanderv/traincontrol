@@ -26,35 +26,47 @@ void handleNonRunningState(){
 }
 
 bool handleZeroMode(messageSlot *handleMessage, messageSlot *sendBack){
-  if (handleMessage -> content[0] == ADDR_SET){
-    return updateID(handleMessage, sendBack);
-  }
-  if (handleMessage -> content[0] == RESTART_CODE){
-    return restart(handleMessage, sendBack);
-  }
+    if (handleMessage -> content[0] == ADDR_SET){
+        return updateID(handleMessage, sendBack);
+    }
+    if (handleMessage -> content[0] == RESTART_CODE){
+        return restart(handleMessage, sendBack);
+    }
+    if(handleMessage->content[0] == EEPROM_READ){
+        return metaControlReadEEPROM(handleMessage, sendBack);
+    }
+    if (handleMessage->content[0] == EEPROM_WRITE){
+        return metaControlWriteEEPROM(handleMessage, sendBack);
+    }
+
   return false;
 }
 bool updateID(messageSlot *handleMessage, messageSlot *sendBack){
-  uint8_t mac[6];
-  teensyMAC(mac);
-  byte m1 = mac[3];
-  byte m2 = mac[4];
-  byte m3 = mac[5];
-  if (handleMessage->content[1] == m1 && handleMessage->content[2] == m2 && handleMessage->content[3] == m3){
-      sendBack -> type = 0;
-      sendBack -> content[0] = 1;
-      sendBack -> content[1]= m1;
-      sendBack -> content[2]= m2;
-      sendBack -> content[3]= m3;
-      sendBack -> content[4]= handleMessage -> content[4];
-      if (MY_ID != handleMessage -> content[4]){
-        MY_ID = handleMessage -> content[4];
-        EEPROM.write(0, MY_ID);
-      }
-      controllerStatus = handleMessage -> content[5];
-      sendBack -> content[5] = handleMessage -> content[5];
-      setCheckByte(sendBack);
-      return true;
+    uint8_t mac[6];
+    teensyMAC(mac);
+    byte m1 = mac[3];
+    byte m2 = mac[4];
+    byte m3 = mac[5];
+    if (handleMessage->content[1] == m1 && handleMessage->content[2] == m2 && handleMessage->content[3] == m3){
+        sendBack -> type = 0;
+        
+        sendBack -> content[0] = ADDR_BROADCAST;
+        sendBack -> content[1]= handleMessage -> content[1];
+        sendBack -> content[2]= handleMessage -> content[2];
+        sendBack -> content[3]= handleMessage -> content[3];
+        sendBack -> content[4]= handleMessage -> content[4];
+
+        if (MY_ID != handleMessage -> content[4]){
+            MY_ID = handleMessage -> content[4];
+            EEPROM.write(0, MY_ID);
+        }
+        controllerStatus = handleMessage -> content[5];
+        sendBack -> content[5] = handleMessage -> content[5];
+        setCheckByte(sendBack);
+        if (controllerStatus == 255){
+            LoadMemory();
+        }
+        return true;
     }
     return false;
 }
