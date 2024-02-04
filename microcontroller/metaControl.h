@@ -19,7 +19,7 @@ bool metaControlWriteEEPROM(messageSlot *handleMessage, messageSlot *sendBack){
 }
 
 bool metaControlReadEEPROM(messageSlot *handleMessage, messageSlot *sendBack){
-  int slot = handleMessage->content[1]*4;
+    int slot = handleMessage->content[1]*4;
     sendBack->type=255;
     sendBack->content[0]=handleMessage->type;
     sendBack->content[1]=handleMessage->content[1];
@@ -32,45 +32,61 @@ bool metaControlReadEEPROM(messageSlot *handleMessage, messageSlot *sendBack){
     return true;
 }
 bool metaControl(messageSlot *handleMessage, messageSlot *sendBack){
-  if (handleMessage->content[0] == 254){
-    return metaControlWriteEEPROM(handleMessage, sendBack);
-  }
-  if(handleMessage->content[0] == 255){
-    return metaControlReadEEPROM(handleMessage, sendBack);
-  }
-  return false;
+    if (handleMessage->content[0] == 254){
+        return metaControlWriteEEPROM(handleMessage, sendBack);
+    }
+    if(handleMessage->content[0] == 255){
+        return metaControlReadEEPROM(handleMessage, sendBack);
+    }
+    return false;
 }
+
+
 byte MY_ID;
 
 struct ControlSlot{
-  byte id; // THE ID in the array;
-  byte type;
-  byte data[3];
+    byte id; // THE ID in the array;
+    byte type;
+    byte data[3];
 };
+
+
 ControlSlot controls[MAX_SLOTS];
+
 bool LoadMemory(){
-  MY_ID = EEPROM.read(0);
-  for ( int i = 0; i < MAX_SLOTS; i++){
-    int slot = (i+1)*4;
-    byte type = EEPROM.read(slot);
+    MY_ID = EEPROM.read(0);
+    for ( int i = 0; i < MAX_SLOTS; i++){
+        int slot = (i+1)*4;
+        byte type = EEPROM.read(slot);
 
-    if(type != 255 ){
-      controls[i].id=i;
-      controls[i].type=type;
-      controls[i].data[0] = EEPROM.read(slot+1);
-      controls[i].data[1]  = EEPROM.read(slot+2);
-      controls[i].data[2]  = EEPROM.read(slot+3);
-
-      if(type == 1){
-        pinMode(controls[i].data[1], OUTPUT);
-        pinMode(controls[i].data[2], OUTPUT);
-      }
-      if(type ==2){
-        pinMode(controls[i].data[1], OUTPUT);
-        digitalWrite(controls[i].data[1], HIGH);
-      }
+        if(type != 255 ){
+            controls[i].id=i;
+            controls[i].type=type;
+            controls[i].data[0] = EEPROM.read(slot+1);
+            controls[i].data[1]  = EEPROM.read(slot+2);
+            controls[i].data[2]  = EEPROM.read(slot+3);
+        }
+        if(type == 1){
+            pinMode(controls[i].data[1], OUTPUT);
+            pinMode(controls[i].data[2], OUTPUT);
+        }
+        if(type ==2){
+            pinMode(controls[i].data[1], OUTPUT);
+            digitalWrite(controls[i].data[1], HIGH);
+        }
+        delay(1);
     }
-    delay(1);
-  }
-  return false;
+    return false;
+}
+
+
+
+bool flashingLights(messageSlot *handleMessage, messageSlot *sendBack){
+    if (handleMessage->content[0] != MY_ID && handleMessage -> content[0] != 255){
+        return false;
+    }
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(handleMessage->content[1]*10);
+    digitalWrite(LED_BUILTIN, LOW);
+    return sendAck(handleMessage, sendBack, 2);
 }
