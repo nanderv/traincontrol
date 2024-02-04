@@ -23,11 +23,13 @@ bool controlSwitch(messageSlot *handleMessage, messageSlot *sendBack){
         return sendAck(handleMessage, sendBack, SWITCH_RETURN_TYPE);
     }
     if (handleMessage->content[1] == 1) {
-        digitalWrite(controls[ptr].data[2], HIGH);
+        digitalWrite(controls[ptr].data[1]+1, HIGH);
         delay(100);
-        digitalWrite(controls[ptr].data[2], LOW);
+        digitalWrite(controls[ptr].data[1]+1, LOW);
         return sendAck(handleMessage, sendBack, SWITCH_RETURN_TYPE);
     }
+
+    
     sendBack->type =ERROR_TYPE;
     sendBack->content[0]=handleMessage->type;
     sendBack->content[1]=handleMessage->content[0];

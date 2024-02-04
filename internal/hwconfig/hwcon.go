@@ -36,7 +36,7 @@ func (c *HwConfigurator) firstFreeAddr() byte {
 
 func (c *HwConfigurator) sendNodeNfo(nde node.Node) {
 	slog.Info("New Addr", "Mac", nde.Mac, "Addr", nde.Addr)
-	err := c.bridge.SendNodeInfoUpdate(nde)
+	err := c.bridge.SendNodeInfoUpdate(nde, 1)
 	if err != nil {
 		slog.Error("Could not send node info", "node", nde, "err", err)
 		return
@@ -57,13 +57,30 @@ func (c *HwConfigurator) HandleNodeAnnounce(mac [3]byte, prefAddr byte) {
 	}
 
 	if prefAddr != nde.Addr || !foundNode {
-		c.sendNodeNfo(nde)
+		go func() {
+			c.sendNodeNfo(nde)
+			c.sendClear(nde)
+		}()
 	} else {
-
+		//c.sendClear(nde)
 		// update to next phase
 	}
 }
 
+func (c *HwConfigurator) sendClear(nde node.Node) {
+	err := c.bridge.SendEepromWrite(nde.Addr, byte(1), 2, [2]byte{2, 2})
+	if err != nil {
+		slog.Error("Error", "err", err)
+	}
+	err = c.bridge.SendEepromWrite(nde.Addr, byte(2), 1, [2]byte{1, 4})
+	if err != nil {
+		slog.Error("Error", "err", err)
+	}
+	err = c.bridge.SendNodeInfoUpdate(nde, 255)
+	if err != nil {
+		slog.Error("Error", "err", err)
+	}
+}
 func (c *HwConfigurator) getNodeByMac(mac [3]byte) (bool, node.Node) {
 	nde, ok := c.nodes[mac]
 	return ok, nde
