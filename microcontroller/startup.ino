@@ -1,5 +1,4 @@
 
-
  void teensyMAC(uint8_t *mac)
 {
   uint32_t m1 = HW_OCOTP_MAC1;
@@ -14,28 +13,23 @@
 void handleNonRunningState(){
   uint8_t mac[6];
   teensyMAC(mac);
-  switch(CONTROLLER_MODE){
-    // In state 0 we keep trying to send a "I am this node" message.
-    case 0:
-      startupSendSlot.type=0;
-      startupSendSlot.content[0]=1;
-      startupSendSlot.content[1]=mac[3];
-      startupSendSlot.content[2]=mac[4];
-      startupSendSlot.content[3]=mac[5];
-      startupSendSlot.content[4]=MY_ID;
-      startupSendSlot.content[5]=CONTROLLER_MODE; // 0
-      setCheckByte(&startupSendSlot);
-      writeMessageToAllBut(999, &startupSendSlot);
-    break;
-  }
 
+  startupSendSlot.type=0;
+  startupSendSlot.content[0]=ADDR_BROADCAST;
+  startupSendSlot.content[1]=mac[3];
+  startupSendSlot.content[2]=mac[4];
+  startupSendSlot.content[3]=mac[5];
+  startupSendSlot.content[4]=MY_ID;
+  startupSendSlot.content[5]=controllerStatus; // 0
+  setCheckByte(&startupSendSlot);
+  writeMessageToAllBut(999, &startupSendSlot);
 }
 
 bool handleZeroMode(messageSlot *handleMessage, messageSlot *sendBack){
-  if (handleMessage -> content[0] == 2){
+  if (handleMessage -> content[0] == ADDR_SET){
     return updateID(handleMessage, sendBack);
   }
-  if (handleMessage -> content[0] == 254){
+  if (handleMessage -> content[0] == RESTART_CODE){
     return restart(handleMessage, sendBack);
   }
   return false;
@@ -57,7 +51,7 @@ bool updateID(messageSlot *handleMessage, messageSlot *sendBack){
         MY_ID = handleMessage -> content[4];
         EEPROM.write(0, MY_ID);
       }
-      CONTROLLER_MODE = handleMessage -> content[5];
+      controllerStatus = handleMessage -> content[5];
       sendBack -> content[5] = handleMessage -> content[5];
       setCheckByte(sendBack);
       return true;
@@ -66,12 +60,7 @@ bool updateID(messageSlot *handleMessage, messageSlot *sendBack){
 }
 
 bool restart(messageSlot *handleMessage, messageSlot *sendBack){
-  uint8_t mac[6];
-  teensyMAC(mac);
-  byte m1 = mac[3];
-  byte m2 = mac[4];
-  byte m3 = mac[5];
-  if (handleMessage->content[1] == m1 && handleMessage->content[2] == m2 && handleMessage->content[3] == m3){
+  if (handleMessage->content[1] == MY_ID){
     delay(2000);
     SCB_AIRCR = 0x05FA0004;
   }
