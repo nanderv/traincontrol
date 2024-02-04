@@ -1,31 +1,30 @@
 #include "hexConv.h"
 
-
-
 void writeToAllBut(int dest, char *input) {
-  for (int i = 0; i < CHAN_IN_USE; i++) {
-    if (comms[i].inUse && (DEBUG_SENDBACK || i != dest)) { 
-      comms[i].write(input,2*(MSG_LENGTH+2));
+    for (int i = 0; i < CHAN_IN_USE; i++) {
+        if (comms[i].inUse && (DEBUG_SENDBACK || i != dest)) {
+            comms[i].write(input,2*(MSG_LENGTH+2));
+        }
     }
-  }
 }
 
 char messageBuf[2*(MSG_LENGTH+2)];
 
 void convertMessageToByte(messageSlot *msg,  char *buffer) {
-  twoHex inB;
-  inB = fromHex(msg->type);
-  buffer[0] = inB.fst;
-  buffer[1] = inB.snd;
-  
-  for (int i = 0; i < MSG_LENGTH; i++) {
-    inB = fromHex(msg->content[i]);
-      buffer[2*(i+1)] = inB.fst;
-      buffer[2*(i+1)+1] = inB.snd;
-  }
-  inB = fromHex(msg->checkByte);
-  buffer[2*(MSG_LENGTH+1)] = inB.fst;
-  buffer[2*(MSG_LENGTH+1)+1] = inB.snd;
+    twoHex inB;
+    inB = fromHex(msg->type);
+    buffer[0] = inB.fst;
+    buffer[1] = inB.snd;
+
+    for (int i = 0; i < MSG_LENGTH; i++) {
+        inB = fromHex(msg->content[i]);
+        buffer[2*(i+1)] = inB.fst;
+        buffer[2*(i+1)+1] = inB.snd;
+    }
+
+    inB = fromHex(msg->checkByte);
+    buffer[2*(MSG_LENGTH+1)] = inB.fst;
+    buffer[2*(MSG_LENGTH+1)+1] = inB.snd;
 }
 
 void writeMessageToAllBut(int dest, messageSlot *msg) {
@@ -36,31 +35,31 @@ void writeMessageToAllBut(int dest, messageSlot *msg) {
 
 // True if finished, otherwise false.
 bool readMessage(int comNR) {
-  messageSlot *slot = &(comms[comNR].incomingMessage);
-  byte checkByte = 0;
-  if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->type)){
-    return false;
-  }
-  checkByte = slot ->type;
-
-  for(int i = 0; i< MSG_LENGTH;i++){
-      if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->content[i])){
+    messageSlot *slot = &(comms[comNR].incomingMessage);
+    byte checkByte = 0;
+    if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->type)){
         return false;
-      };
-      checkByte = checkByte ^ slot->content[i];
-  }
+    }
+    checkByte = slot ->type;
 
-  if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->checkByte)){
-    return false;
-  }
+    for(int i = 0; i< MSG_LENGTH;i++){
+        if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->content[i])){
+            return false;
+        };
+        checkByte = checkByte ^ slot->content[i];
+    }
 
-  if(checkByte == slot->checkByte){
-    digitalWrite(LED_BUILTIN, LOW);
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);
+    if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->checkByte)){
+        return false;
+    }
 
-  }
-  return checkByte == slot->checkByte;
+    if(checkByte == slot->checkByte){
+        digitalWrite(LED_BUILTIN, LOW);
+    } else {
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+
+    return checkByte == slot->checkByte;
 }
 
 void handleChannel(int i){
@@ -74,7 +73,7 @@ void handleChannel(int i){
                 writeMessageToAllBut(999, &comms[i].outgoingMessage);
               }
             } else {
-              if(handleMessage(&comms[i].incomingMessage, &comms[i].outgoingMessage)){
+              if(controllerStatus == STATUS_RUNNING && handleMessage(&comms[i].incomingMessage, &comms[i].outgoingMessage)){
                 writeMessageToAllBut(999, &comms[i].outgoingMessage);
               }
             } 
@@ -86,6 +85,7 @@ void handleChannel(int i){
       }
    }
 }
+
 byte coms0Read() {
   return Coms0.read();
 }
@@ -150,9 +150,6 @@ void coms5Write(char *c, int i) {
   Coms5.write(c, i);
   Coms5.write("\n");
 }
-
-
-
 
 char voidRead(){return '-';}
 bool voidAvailable() {return false;}

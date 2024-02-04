@@ -12,7 +12,6 @@
 #include "sectorControl.h"
 #include "startup.h"
 
-
 void setup() {
   addHandler(0,metaControl );
   addHandler(1, flashingLights);
@@ -51,7 +50,7 @@ void setup() {
 
 }
 
-int CONTROLLER_MODE ;
+int controllerStatus ;
 int sleepCount;
 messageSlot startupSendSlot;
 
@@ -59,7 +58,7 @@ void loop() {
   for (int i = 0; i < CHAN_IN_USE; i++) {
     handleChannel(i);
   }
-  if (CONTROLLER_MODE != 255){
+  if (controllerStatus != STATUS_RUNNING){
     if(sleepCount ==0){
       digitalWrite(LED_BUILTIN, HIGH);
       handleNonRunningState();
@@ -68,7 +67,7 @@ void loop() {
       digitalWrite(LED_BUILTIN, LOW);
     }
     sleepCount ++;
-    if (sleepCount == 10000){
+    if (sleepCount == 5000){
       sleepCount = 0;
     }
     delay(1);
