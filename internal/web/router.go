@@ -2,29 +2,43 @@ package web
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
+	"sync"
 )
 
 type MessageRouter struct {
+	sync.RWMutex
 	channelMap map[*chan []byte]struct{}
 }
 
 func (r *MessageRouter) Subscribe() *chan []byte {
-	fmt.Println("Connect")
+	r.Lock()
+	defer r.Unlock()
+	slog.Debug("Subscribing to channel")
 	c := make(chan []byte)
 	r.channelMap[&c] = struct{}{}
 	return &c
 }
+
 func (r *MessageRouter) Unsubscribe(c *chan []byte) {
-	fmt.Println("Disco")
+	r.Lock()
+	defer r.Unlock()
+	slog.Debug("Unsubscribing from channel")
+
 	delete(r.channelMap, c)
 }
+
 func (r *MessageRouter) Write(in []byte) (int, error) {
+	r.RLock()
+	defer r.RUnlock()
+
 	for c, _ := range r.channelMap {
 		*c <- in
 	}
 	return len(in), nil
 }
+
 func NewRouter() *MessageRouter {
 	m := make(map[*chan []byte]struct{})
 	return &MessageRouter{
@@ -52,18 +66,9 @@ func RouteWithMessageRouter(router *MessageRouter) func(w http.ResponseWriter, r
 		for {
 			select {
 			case t := <-*c:
-				fmt.Println(t)
+				_, _ = fmt.Fprintln(w, "event: update")
+				_, _ = fmt.Fprintf(w, "data: %s\n\n", t)
 
-				_, err := fmt.Fprintln(w, "event: update")
-				if err != nil {
-					return
-				}
-
-				_, err = fmt.Fprintf(w, "data: %s\n\n", t)
-
-				if err != nil {
-					return
-				}
 				flusher.Flush()
 			case <-r.Context().Done():
 				return

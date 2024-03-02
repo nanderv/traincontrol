@@ -1,19 +1,17 @@
 package traintracks
 
 import (
-	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/commands"
-	layout2 "github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/layout"
+	domain2 "github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
 )
 
 type TrackService struct {
 	layoutBridge         Sender
-	notifyChangeChannels []*chan layout2.Layout
-	layout               layout2.Layout
+	notifyChangeChannels []*chan domain2.Layout
+	Layout               domain2.Layout
 }
 
-func (svc *TrackService) AddNewReturnChannel() *chan layout2.Layout {
-	ch := make(chan layout2.Layout)
+func (svc *TrackService) AddNewReturnChannel() *chan domain2.Layout {
+	ch := make(chan domain2.Layout)
 	svc.notifyChangeChannels = append(svc.notifyChangeChannels, &ch)
 	return &ch
 }
@@ -23,45 +21,31 @@ func (svc *TrackService) SetLayoutSender(cc Sender) {
 	return
 }
 
-func NewCore(configurator ...Configurator) (*TrackService, error) {
+func NewTrackService(lay domain2.Layout) (*TrackService, error) {
 	c := TrackService{}
-	c.layout.TrackSwitches = make([]layout2.TrackSwitch, 0)
-	c.notifyChangeChannels = make([]*chan layout2.Layout, 0)
-	for _, config := range configurator {
-		var err error
-		err = config(&c)
-		if err != nil {
-			return &TrackService{}, err
-		}
-	}
+	c.Layout = lay
+
 	return &c, nil
 }
 
-func (svc *TrackService) SetSwitchDirection(switchID byte, direction bool) error {
-	var found bool
-	for _, sw := range svc.layout.TrackSwitches {
-		if sw.Number == switchID {
-			found = true
-		}
-	}
-	if !found {
-		return fmt.Errorf("switch with id %v not found", switchID)
+func (svc *TrackService) SetSwitchDirection(switchID string, direction bool) error {
+	sw, err := svc.Layout.GetSwitch(switchID)
+
+	if err != nil {
+		return err
 	}
 
-	return svc.layoutBridge.SetSwitchDirection(switchID, direction)
+	return svc.layoutBridge.SetSwitchDirection(sw, direction)
 }
 
-func (svc *TrackService) UpdateSwitchState(msg commands.SetSwitchResult) {
-	for i, sw := range svc.layout.TrackSwitches {
-		if msg.SetSwitch.IsSwitch(sw.Number) {
-			svc.layout.TrackSwitches[i].Direction = msg.SetSwitch.GetDirection()
-		}
-	}
+func (svc *TrackService) UpdateSwitchState(sw *domain2.TrackSwitch, direction bool) error {
+	sw.UpdateDirection(direction)
 	svc.notify()
+	return nil
 }
 
 func (svc *TrackService) notify() {
 	for _, ch := range svc.notifyChangeChannels {
-		*ch <- svc.layout
+		*ch <- svc.Layout
 	}
 }
