@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	"github.com/nanderv/traincontrol-prototype/internal/web/view/base"
 	"log"
 	"net/http"
 )
@@ -39,15 +38,10 @@ func act(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handle(w http.ResponseWriter, r *http.Request) {
-	base.Display().Render(context.Background(), w)
-}
 func Init(ctx context.Context, c *traintracks.TrackService) error {
 	// Add file server
-	fs := http.FileServer(http.Dir("web/static/"))
+	fs := http.FileServer(http.Dir("internal/web/static/"))
 	http.Handle("/", http.StripPrefix("/", fs))
-	http.HandleFunc("/test", handle)
-
 	// Add route for getting chunked data
 	rt := NewRouter()
 	go func() {
@@ -60,7 +54,7 @@ func Init(ctx context.Context, c *traintracks.TrackService) error {
 	http.HandleFunc("/chunk", RouteWithMessageRouter(rt))
 
 	// Start the server
-	log.Print("Listening on localhost:8888")
+	log.Print("Listening on localhost:9898")
 	log.Fatal(http.ListenAndServe(":9898", nil))
 	return nil
 }

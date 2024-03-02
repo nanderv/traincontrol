@@ -6,38 +6,38 @@
 
     <link rel="stylesheet" href="semantic/semantic.css">
 </head>
-    <script>
-function doit() {
-    const eventSource = new EventSource('/chunk');
+<!--    <script>-->
+<!--function doit() {-->
+<!--    const eventSource = new EventSource('/chunk');-->
 
-    eventSource.onmessage = function(event) {
-    const text = event.data;
+<!--    eventSource.onmessage = function(event) {-->
+<!--    const text = event.data;-->
 
-    const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const myArray = text.split(" ");
-      console.log(myArray[0])
-      if (myArray[0] == "line"){
-          console.log("LINE")
-// Start a new Path
-        ctx.beginPath();
-        ctx.moveTo(myArray[1], myArray[2]);
-        ctx.lineTo(myArray[3], myArray[4]);
-        // Draw the Path
-        ctx.stroke();
-      } else {
-          console.log(myArray)
-      }
-  }
-    eventSource.onerror = (err) => {
-        console.error("EventSource failed:", err);
-    };
-}
+<!--    const canvas = document.getElementById("canvas");-->
+<!--      const ctx = canvas.getContext("2d");-->
+<!--      const myArray = text.split(" ");-->
+<!--      console.log(myArray[0])-->
+<!--      if (myArray[0] == "line"){-->
+<!--          console.log("LINE")-->
+<!--// Start a new Path-->
+<!--        ctx.beginPath();-->
+<!--        ctx.moveTo(myArray[1], myArray[2]);-->
+<!--        ctx.lineTo(myArray[3], myArray[4]);-->
+<!--        // Draw the Path-->
+<!--        ctx.stroke();-->
+<!--      } else {-->
+<!--          console.log(myArray)-->
+<!--      }-->
+<!--  }-->
+<!--    eventSource.onerror = (err) => {-->
+<!--        console.error("EventSource failed:", err);-->
+<!--    };-->
+<!--}-->
 
-// doit()
-function send(){
-    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })
-}
+<!--// doit()-->
+<!--function send(){-->
+<!--    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })-->
+<!--}-->
     </script>
     <body>
 
