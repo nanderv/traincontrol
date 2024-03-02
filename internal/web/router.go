@@ -2,7 +2,6 @@ package web
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -34,7 +33,7 @@ func (r *MessageRouter) Write(in []byte) (int, error) {
 	r.RLock()
 	defer r.RUnlock()
 
-	for c := range r.channelMap {
+	for c, _ := range r.channelMap {
 		*c <- in
 	}
 	return len(in), nil
@@ -47,12 +46,11 @@ func NewRouter() *MessageRouter {
 	}
 }
 
-func RouteWithMessageRouter(router *MessageRouter) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		cha := router.Subscribe()
-		defer router.Unsubscribe(cha)
+func RouteWithMessageRouter(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c := router.Subscribe()
+		defer router.Unsubscribe(c)
 
-		w := c.Response().Writer
 		flusher, ok := w.(http.Flusher)
 
 		if !ok {
@@ -67,13 +65,13 @@ func RouteWithMessageRouter(router *MessageRouter) echo.HandlerFunc {
 		w.Header().Set("Transfer-Encoding", "chunked")
 		for {
 			select {
-			case t := <-*cha:
+			case t := <-*c:
 				_, _ = fmt.Fprintln(w, "event: update")
 				_, _ = fmt.Fprintf(w, "data: %s\n\n", t)
 
 				flusher.Flush()
-			case <-c.Request().Context().Done():
-				return nil
+			case <-r.Context().Done():
+				return
 			}
 		}
 	}
