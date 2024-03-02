@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain/layout"
+	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
 	"io"
 )
 
 type LayoutAdapter struct {
 	c  *traintracks.TrackService
-	ch *chan layout.Layout
+	ch *chan domain.Layout
 	h  io.Writer
 }
 

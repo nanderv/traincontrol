@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/a-h/templ v0.2.543
 	github.com/dsyx/serialport-go v1.0.0
-	github.com/gofiber/fiber/v2 v2.52.0
 )
 
 require (

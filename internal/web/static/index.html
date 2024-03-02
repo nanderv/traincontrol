@@ -1,40 +1,62 @@
 <html>
-    <script>
-function doit() {
-    const eventSource = new EventSource('/chunk');
+<head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="/semantic/semantic.js"></script>
 
-    eventSource.onmessage = function(event) {
-    const text = event.data;
+    <link rel="stylesheet" href="semantic/semantic.css">
+</head>
+<!--    <script>-->
+<!--function doit() {-->
+<!--    const eventSource = new EventSource('/chunk');-->
 
-    const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const myArray = text.split(" ");
-      console.log(myArray[0])
-      if (myArray[0] == "line"){
-          console.log("LINE")
-// Start a new Path
-        ctx.beginPath();
-        ctx.moveTo(myArray[1], myArray[2]);
-        ctx.lineTo(myArray[3], myArray[4]);
-        // Draw the Path
-        ctx.stroke();
-      } else {
-          console.log(myArray)
-      }
-  }
-    eventSource.onerror = (err) => {
-        console.error("EventSource failed:", err);
-    };
-}
+<!--    eventSource.onmessage = function(event) {-->
+<!--    const text = event.data;-->
 
-doit()
-function send(){
-    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })
-}
+<!--    const canvas = document.getElementById("canvas");-->
+<!--      const ctx = canvas.getContext("2d");-->
+<!--      const myArray = text.split(" ");-->
+<!--      console.log(myArray[0])-->
+<!--      if (myArray[0] == "line"){-->
+<!--          console.log("LINE")-->
+<!--// Start a new Path-->
+<!--        ctx.beginPath();-->
+<!--        ctx.moveTo(myArray[1], myArray[2]);-->
+<!--        ctx.lineTo(myArray[3], myArray[4]);-->
+<!--        // Draw the Path-->
+<!--        ctx.stroke();-->
+<!--      } else {-->
+<!--          console.log(myArray)-->
+<!--      }-->
+<!--  }-->
+<!--    eventSource.onerror = (err) => {-->
+<!--        console.error("EventSource failed:", err);-->
+<!--    };-->
+<!--}-->
+
+<!--// doit()-->
+<!--function send(){-->
+<!--    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })-->
+<!--}-->
     </script>
     <body>
+
+    <div class="lg:content-auto">
+        <h1 class="text-3xl font-bold underline text-clifford">
+            Hello world!
+        </h1>
+        <div hx-sse="connect:/chunk swap:update">
+            <div hx-trigger="sse:new_news" hx-get="/chunk"></div>
+        </div>
         <canvas id="canvas" width="500px" height="500px"></canvas>
-    CMD: <input id="cmd" />
-    <input type="submit" onclick="send();">
-        </body>
+
+        <div class="ui left corner labeled input">
+
+            <input id="cmd" />
+            <div class="ui left corner label">
+                <i class="asterisk icon"></i>
+    </div>
+    <input class="ui button" type="submit" onclick="send();">
+    </div>
+    </body>
 </html>

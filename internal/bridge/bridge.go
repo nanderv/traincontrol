@@ -155,7 +155,7 @@ func (f *SerialBridge) sendMessageWithConfirmation(listener *chan domain.Msg, ms
 	select {
 	case resultMsg := <-*listener:
 		if checker(resultMsg) {
-			slog.Info("Done direction", "message", resultMsg)
+			slog.Info("Message confirmed", "message", resultMsg)
 			return true, nil
 		} else {
 			slog.Info("Message received, but irrelevant", "message", resultMsg)
