@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
 	"io"
@@ -40,4 +41,11 @@ func (l *LayoutAdapter) Handle(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func (l *LayoutAdapter) SetSwitch(c echo.Context) error {
+	switchID := c.Request().PostFormValue("switchID")
+	direction := c.Request().PostFormValue("direction")
+	slog.Info("Set switch", "SwitchID", switchID, "Direction", direction)
+	return l.c.SetSwitchDirection(switchID, direction == "true")
 }
