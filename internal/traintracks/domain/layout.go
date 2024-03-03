@@ -37,6 +37,9 @@ type TrackSwitch struct {
 	Name string
 
 	Direction bool
+
+	X int
+	Y int
 }
 
 func (l *Layout) GetSwitch(id string) (*TrackSwitch, error) {
@@ -56,13 +59,14 @@ func (l *Layout) GetSwitchFromHWIDs(mac bridgeDomain.Mac, portID byte, pinID byt
 }
 
 func (t *TrackSwitch) UpdateDirection(dir bool) {
-	slog.Info("Updating direciton to", "Direction", dir, "Switch", t)
+	slog.Debug("Updating direciton to", "Direction", dir, "Switch", t)
 	t.Direction = dir
 }
 
 func (t *TrackSwitch) SetDirectionCMD(direction bool) bridgeDomain.Msg {
 	pin := t.LeftPin
 	dir := byte(0)
+	slog.Debug("Direction when creating msg: ", "direction", direction)
 	if direction {
 		pin = t.RightPin
 		dir = 1
