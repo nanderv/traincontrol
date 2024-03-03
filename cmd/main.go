@@ -26,35 +26,206 @@ func main() {
 		RightPin:  3,
 		Name:      "1",
 		Direction: false,
-		X:         100,
-		Y:         100,
+		X:         200,
+		Y:         400,
+	})
+	lay.WithTrackSwitch(domain2.TrackSwitch{
+		Mac:       domain.Mac{20, 141, 142},
+		PortID:    0,
+		LeftPin:   4,
+		RightPin:  5,
+		Name:      "sl",
+		Direction: false,
+		X:         450,
+		Y:         400,
 	})
 
 	lay.WithBlock(domain2.Block{
-		Name: "testBlock",
+		Name: "forest_to_shadow",
 		Segments: []domain2.Segment{
 			{
 				Line: domain2.Line{
-					StartX: 0,
-					StartY: 0,
-					EndX:   100,
-					EndY:   100,
+					StartX: 170,
+					StartY: 400,
+					EndX:   200,
+					EndY:   400,
 				},
 				Enabled: true,
 			},
 			{
 				Line: domain2.Line{
-					StartX: 110,
-					StartY: 100,
+					StartX: 170,
+					StartY: 380,
 					EndX:   200,
-					EndY:   100,
+					EndY:   400,
 				},
 				Enabled: false,
+			},
+			{
+				Line: domain2.Line{
+					StartX: 200,
+					StartY: 400,
+					EndX:   400,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+		},
+
+		Enabled: false,
+	})
+
+	lay.WithBlock(domain2.Block{
+		Name: "forest_siding",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 110,
+					StartY: 340,
+					EndX:   167,
+					EndY:   378,
+				},
+				Enabled: true,
+			},
+		},
+
+		Enabled: false,
+	})
+	lay.WithBlock(domain2.Block{
+		Name: "forest_curve",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 110,
+					StartY: 400,
+					EndX:   167,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+		},
+
+		Enabled: false,
+	})
+
+	lay.WithBlock(domain2.Block{
+		Name: "forest_to_main",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 50,
+					StartY: 400,
+					EndX:   107,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+		},
+
+		Enabled: false,
+	})
+	lay.WithBlock(domain2.Block{
+		Name: "shadow_left",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 410,
+					StartY: 400,
+					EndX:   450,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+			{
+				Line: domain2.Line{
+					StartX: 450,
+					StartY: 400,
+					EndX:   480,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+			{
+				Line: domain2.Line{
+					StartX: 450,
+					StartY: 400,
+					EndX:   480,
+					EndY:   370,
+				},
+				Enabled: true,
+			},
+		},
+
+		Enabled: false,
+	})
+	lay.WithBlock(domain2.Block{
+		Name: "shadow_top_l",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 483,
+					StartY: 370,
+					EndX:   557,
+					EndY:   370,
+				},
+				Enabled: true,
 			},
 		},
 		Enabled: false,
 	})
+	lay.WithBlock(domain2.Block{
+		Name: "shadow_bottom_l",
+		Segments: []domain2.Segment{
 
+			{
+				Line: domain2.Line{
+					StartX: 483,
+					StartY: 400,
+					EndX:   557,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+		},
+		Enabled: false,
+	})
+	lay.WithBlock(domain2.Block{
+		Name: "shadow_top_r",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 560,
+					StartY: 370,
+					EndX:   634,
+					EndY:   370,
+				},
+				Enabled: true,
+			},
+		},
+		Enabled: false,
+	})
+	lay.WithBlock(domain2.Block{
+		Name: "shadow_bottom_r",
+		Segments: []domain2.Segment{
+
+			{
+				Line: domain2.Line{
+					StartX: 560,
+					StartY: 400,
+					EndX:   634,
+					EndY:   400,
+				},
+				Enabled: true,
+			},
+		},
+		Enabled: false,
+	})
 	c, err := traintracks.NewTrackService(lay)
 
 	b := bridge.NewSerialBridge()
