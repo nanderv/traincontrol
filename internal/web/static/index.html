@@ -1,40 +1,116 @@
 <html>
-    <script>
-function doit() {
-    const eventSource = new EventSource('/chunk');
+<head>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="semantic/semantic.css">
+</head>
+<body>
+<div class="lg:content-auto">
+    <h1 class="text-3xl font-bold underline text-clifford">
+        Hello world!
+    </h1>
+    <div id="json_target" hx-sse="connect:/chunk swap:update">
+    </div>
+    <canvas id="canvas" width="500px" height="500px"></canvas>
 
-    eventSource.onmessage = function(event) {
-    const text = event.data;
+    <div class="ui left corner labeled input">
 
-    const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const myArray = text.split(" ");
-      console.log(myArray[0])
-      if (myArray[0] == "line"){
-          console.log("LINE")
-// Start a new Path
-        ctx.beginPath();
-        ctx.moveTo(myArray[1], myArray[2]);
-        ctx.lineTo(myArray[3], myArray[4]);
-        // Draw the Path
-        ctx.stroke();
-      } else {
-          console.log(myArray)
-      }
-  }
-    eventSource.onerror = (err) => {
-        console.error("EventSource failed:", err);
-    };
-}
+        <input id="cmd"/>
+        <div class="ui left corner label">
+            <i class="asterisk icon"></i>
+        </div>
+        <input class="ui button" type="submit" onclick="send();">
+    </div>
+</div>
+<script>
+    function getLayout() {
+        const html = document.querySelector('#json_target').innerHTML;
+        let layout = JSON.parse(html);
+        const blocks = Object.entries(layout.Blocks);
+        const switches = Object.entries(layout.TrackSwitches);
+        return {
+            blocks,
+            switches
+        }
+    }
 
-doit()
-function send(){
-    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })
-}
-    </script>
-    <body>
-        <canvas id="canvas" width="500px" height="500px"></canvas>
-    CMD: <input id="cmd" />
-    <input type="submit" onclick="send();">
-        </body>
+    // select the target node
+    var target = document.querySelector('#json_target');
+
+    // create an observer instance
+    var observer = new MutationObserver(function (mutations) {
+        const layout = getLayout();
+        const {blocks, switches} = layout
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let [name, block] of blocks) {
+            for (const segment of block.Segments) {
+                ctx.beginPath();
+                ctx.lineWidth = 5;
+
+                if (segment.Enabled) {
+                    ctx.strokeStyle = "red";
+                } else {
+                    ctx.strokeStyle = "black";
+                }
+                ctx.moveTo(segment.StartX, segment.StartY);
+                ctx.lineTo(segment.EndX, segment.EndY);
+                // Draw the Path
+                ctx.stroke();
+            }
+        }
+
+        // Draw switches
+        for (let [name, trackSwitch] of switches) {
+            console.log(trackSwitch)
+            ctx.beginPath();
+            if (trackSwitch.Direction) {
+                ctx.fillStyle = "blue";
+            } else {
+                ctx.fillStyle = "red";
+            }
+            ctx.arc(trackSwitch.X, trackSwitch.Y, 10, 0, Math.PI * 2, false);
+            ctx.fill();
+        }
+    });
+
+    function getCursorPosition(canvas, event) {
+        const rect = canvas.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        return {
+            x,
+            y,
+        }
+    }
+
+    const canvas = document.querySelector('#canvas')
+    canvas.addEventListener('mousedown', function (e) {
+        let position = getCursorPosition(canvas, e);
+        let layout = getLayout();
+        for (let [name, trackSwitch] of layout.switches) {
+            dx = position.x - trackSwitch.X
+            dy = position.y - trackSwitch.Y
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 10) {
+                fetch('/switchSet', {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({switch_id:name, direction: !trackSwitch.Direction})
+                })
+            }
+        }
+    })
+
+    // configuration of the observer:
+    var config = {attributes: false, childList: true, characterData: false};
+
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config);
+
+    // later, you can stop observing
+    // observer.disconnect();
+</script>
+</body>
 </html>

@@ -31,7 +31,7 @@ func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
 			return err
 		}
 
-		return adapt.trackService.UpdateSwitchState(sw, msg.Val[5] == 0)
+		return adapt.trackService.UpdateSwitchState(sw, msg.Val[5] != 0)
 	}
 	return nil
 }
