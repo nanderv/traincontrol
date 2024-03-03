@@ -1,4 +1,3 @@
-#include <EEPROM.h>
 #include "Arduino.h"
 #include "defines.h"
 #include "coms.h"
