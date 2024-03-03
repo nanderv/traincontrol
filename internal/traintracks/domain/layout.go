@@ -8,6 +8,22 @@ import (
 
 type Layout struct {
 	TrackSwitches map[string]*TrackSwitch
+	Blocks        map[string]*Block
+}
+
+func NewLayout() Layout {
+	l := Layout{
+		TrackSwitches: make(map[string]*TrackSwitch),
+		Blocks:        make(map[string]*Block),
+	}
+	return l
+}
+func (l *Layout) WithTrackSwitch(t TrackSwitch) {
+	l.TrackSwitches[t.Name] = &t
+}
+
+func (l *Layout) WithBlock(b Block) {
+	l.Blocks[b.Name] = &b
 }
 
 type TrackSwitch struct {

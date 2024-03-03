@@ -21,24 +21,29 @@ type SerialBridge struct {
 	outboundChan *chan domain.Msg
 }
 
-// NewSerialBridge sets up a Serial bridge. It is kinda garbage, but it works on my machine :).
+var ports = []string{"/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2"}
+
+// NewSerialBridge sets up a Serial bridge, based on three standard ports that are used on a lot of linux machines.
 func NewSerialBridge() *SerialBridge {
-	port, err := serialport.Open("/dev/ttyACM0", serialport.DefaultConfig())
-	if err != nil {
-		slog.Info("couldn't open serial conn", err)
-		port, err = serialport.Open("/dev/ttyACM1", serialport.DefaultConfig())
+	var port *serialport.SerialPort
+
+	for _, p := range ports {
+		var err error
+		port, err = serialport.Open(p, serialport.DefaultConfig())
 		if err != nil {
-			slog.Info("couldn't open serial conn", err)
-			port, err = serialport.Open("/dev/ttyACM2", serialport.DefaultConfig())
-			if err != nil {
-				slog.Error("couldn't open serial conn", err)
-				return nil
-			}
+			slog.Info("Unable to initialize serial port", "port", p, "error", err)
+			continue
 		}
+		slog.Info("Using serial port", "port", p)
+		break
 	}
 
 	cha := make(chan domain.Msg)
-	return &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{}), outboundChan: &cha}
+	b := &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{}), outboundChan: &cha}
+
+	go b.IncomingHandler()
+	go b.OutgoingHandler()
+	return b
 }
 
 func (f *SerialBridge) AddReceiver(r MessageReceiver) {

@@ -2,6 +2,7 @@ package traintracks
 
 import (
 	domain2 "github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
+	"time"
 )
 
 type TrackService struct {
@@ -24,7 +25,7 @@ func (svc *TrackService) SetLayoutSender(cc Sender) {
 func NewTrackService(lay domain2.Layout) (*TrackService, error) {
 	c := TrackService{}
 	c.Layout = lay
-
+	go c.notifyEveryOnce()
 	return &c, nil
 }
 
@@ -47,5 +48,14 @@ func (svc *TrackService) UpdateSwitchState(sw *domain2.TrackSwitch, direction bo
 func (svc *TrackService) notify() {
 	for _, ch := range svc.notifyChangeChannels {
 		*ch <- svc.Layout
+	}
+}
+func (svc *TrackService) notifyEveryOnce() {
+	t := time.NewTimer(time.Second * 5)
+	for {
+		select {
+		case <-t.C:
+			svc.notify()
+		}
 	}
 }
