@@ -26,6 +26,8 @@ func main() {
 		RightPin:  3,
 		Name:      "1",
 		Direction: false,
+		X:         100,
+		Y:         100,
 	})
 
 	lay.WithBlock(domain2.Block{

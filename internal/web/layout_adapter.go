@@ -43,9 +43,18 @@ func (l *LayoutAdapter) Handle(ctx context.Context) {
 	}
 }
 
+type setSwitchInput struct {
+	SwitchID  string `json:"switch_id"`
+	Direction bool   `json:"direction"`
+}
+
 func (l *LayoutAdapter) SetSwitch(c echo.Context) error {
-	switchID := c.Request().PostFormValue("switchID")
-	direction := c.Request().PostFormValue("direction")
-	slog.Info("Set switch", "SwitchID", switchID, "Direction", direction)
-	return l.c.SetSwitchDirection(switchID, direction == "true")
+	input := setSwitchInput{}
+
+	err := json.NewDecoder(c.Request().Body).Decode(&input)
+	if err != nil {
+		return err
+	}
+
+	return l.c.SetSwitchDirection(input.SwitchID, input.Direction)
 }
