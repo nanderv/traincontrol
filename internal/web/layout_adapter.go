@@ -6,6 +6,7 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
 	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
 	"io"
+	"log/slog"
 )
 
 type LayoutAdapter struct {
@@ -22,21 +23,20 @@ func NewLayoutAdapter(c *traintracks.TrackService, h io.Writer) *LayoutAdapter {
 	}
 }
 
-func (l *LayoutAdapter) Handle(ctx context.Context) error {
+func (l *LayoutAdapter) Handle(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-
-			return nil
+			return
 		case d := <-*l.ch:
 			b, err := json.Marshal(&d)
 			if err != nil {
-				return err
+				slog.Error("unable to marshall data!", "error", err)
 			}
 
 			_, err = l.h.Write(b)
 			if err != nil {
-				return err
+				slog.Error("Unable to send out data to writer!", "error", err)
 			}
 		}
 	}
