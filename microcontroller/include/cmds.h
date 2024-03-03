@@ -1,3 +1,4 @@
+# define FLASHING_LIGHTS_TYPE 1
 # define SWITCH_TYPE 2
 # define SWITCH_RETURN_TYPE 3
 
@@ -6,6 +7,3 @@
 
 # define DIRECTIONAL_SECTOR = 6
 # define DIRECTIONAL_SECTOR_RETURN = 7
-
-
-
