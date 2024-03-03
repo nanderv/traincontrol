@@ -11,7 +11,7 @@ type Segment struct {
 	Enabled bool // Are the switches in such a way that this segment is actually running?
 }
 type Block struct {
-	Name    string
-	Segment []Segment
-	Enabled bool // Is this block turned on?
+	Name     string
+	Segments []Segment
+	Enabled  bool // Is this block turned on?
 }

@@ -30,15 +30,24 @@ func main() {
 
 	lay.WithBlock(domain2.Block{
 		Name: "testBlock",
-		Segment: []domain2.Segment{
+		Segments: []domain2.Segment{
 			{
 				Line: domain2.Line{
 					StartX: 0,
 					StartY: 0,
-					EndX:   0,
-					EndY:   0,
+					EndX:   100,
+					EndY:   100,
 				},
 				Enabled: true,
+			},
+			{
+				Line: domain2.Line{
+					StartX: 110,
+					StartY: 100,
+					EndX:   200,
+					EndY:   100,
+				},
+				Enabled: false,
 			},
 		},
 		Enabled: false,

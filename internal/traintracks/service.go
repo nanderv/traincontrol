@@ -51,7 +51,7 @@ func (svc *TrackService) notify() {
 	}
 }
 func (svc *TrackService) notifyEveryOnce() {
-	t := time.NewTimer(time.Second * 5)
+	t := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-t.C:
