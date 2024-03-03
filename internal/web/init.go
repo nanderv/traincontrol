@@ -44,12 +44,8 @@ func Init(ctx context.Context, c *traintracks.TrackService) error {
 	http.Handle("/", http.StripPrefix("/", fs))
 	// Add route for getting chunked data
 	rt := NewRouter()
-	go func() {
-		err := NewLayoutAdapter(c, rt).Handle(ctx)
-		if err != nil {
-			return
-		}
-	}()
+	go NewLayoutAdapter(c, rt).Handle(ctx)
+
 	http.HandleFunc("/send", act(rt))
 	http.HandleFunc("/chunk", RouteWithMessageRouter(rt))
 

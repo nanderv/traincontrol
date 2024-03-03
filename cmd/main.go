@@ -11,48 +11,57 @@ import (
 	"github.com/nanderv/traincontrol-prototype/internal/web"
 	"log/slog"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
-	switches := map[string]*domain2.TrackSwitch{
-		"1": {
-			Mac:       domain.Mac{20, 141, 142},
-			PortID:    0,
-			LeftPin:   2,
-			RightPin:  3,
-			Name:      "1",
-			Direction: false,
+	lay := domain2.NewLayout()
+	lay.WithTrackSwitch(domain2.TrackSwitch{
+		Mac:       domain.Mac{20, 141, 142},
+		PortID:    0,
+		LeftPin:   2,
+		RightPin:  3,
+		Name:      "1",
+		Direction: false,
+	})
+
+	lay.WithBlock(domain2.Block{
+		Name: "testBlock",
+		Segment: []domain2.Segment{
+			{
+				Line: domain2.Line{
+					StartX: 0,
+					StartY: 0,
+					EndX:   0,
+					EndY:   0,
+				},
+				Enabled: true,
+			},
 		},
-	}
+		Enabled: false,
+	})
 
-	c, err := traintracks.NewTrackService(domain2.Layout{TrackSwitches: switches})
+	c, err := traintracks.NewTrackService(lay)
 
-	bridg := bridge.NewSerialBridge()
-	go bridg.IncomingHandler()
-	go bridg.OutgoingHandler()
+	b := bridge.NewSerialBridge()
 
-	traintracks2.NewMessageAdapter(c, bridg)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	traintracks2.NewMessageAdapter(c, b)
 
 	if err != nil {
 		return
 	}
 	go func() {
-		err := web.Init(ctx, c)
+		err := web.Init(context.Background(), c)
 		if err != nil {
 			fmt.Println(err)
 		}
 	}()
-	for {
-		time.Sleep(5 * time.Second)
-		c.SetSwitchDirection("1", true)
-		time.Sleep(5 * time.Second)
-		c.SetSwitchDirection("1", false)
-	}
-	time.Sleep(1 * time.Hour)
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	x := <-done
+	slog.Info("Application killed", "signal", x.String())
 }
