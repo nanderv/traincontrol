@@ -6,20 +6,14 @@
 <body>
 <div class="lg:content-auto">
     <h1 class="text-3xl font-bold underline text-clifford">
-        Hello world!
+        Train control
     </h1>
-    <div id="json_target" hx-sse="connect:/chunk swap:update">
-    </div>
-    <canvas id="canvas" width="500px" height="500px"></canvas>
 
-    <div class="ui left corner labeled input">
+    <canvas id="canvas" width="960px" height="480px" style="    border: 1px solid blue;"></canvas>
 
-        <input id="cmd"/>
-        <div class="ui left corner label">
-            <i class="asterisk icon"></i>
+
+        <div id="json_target" hx-sse="connect:/chunk swap:update">
         </div>
-        <input class="ui button" type="submit" onclick="send();">
-    </div>
 </div>
 <script>
     function getLayout() {
