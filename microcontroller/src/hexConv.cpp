@@ -1,5 +1,6 @@
-# define Coms0 Serial
-# define Coms1 Serial1
+#include "Arduino.h"
+#include "hexConv.h"
+
 
 byte toHex(byte hv){
   switch (hv) {
