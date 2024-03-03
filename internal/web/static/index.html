@@ -1,62 +1,131 @@
 <html>
 <head>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!--    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>-->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="/semantic/semantic.js"></script>
+    <!--    <script src="/semantic/semantic.js"></script>-->
 
     <link rel="stylesheet" href="semantic/semantic.css">
 </head>
-    <script>
-function doit() {
-    const eventSource = new EventSource('/chunk');
+<script>
+    function doit() {
+        const eventSource = new EventSource('/chunk');
 
-    eventSource.onmessage = function(event) {
-    const text = event.data;
+        eventSource.onmessage = function (event) {
+            const text = event.data;
 
-    const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const myArray = text.split(" ");
-      console.log(myArray[0])
-      if (myArray[0] == "line"){
-          console.log("LINE")
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const myArray = text.split(" ");
+            console.log(myArray[0])
+            if (myArray[0] == "line") {
+                console.log("LINE")
 // Start a new Path
-        ctx.beginPath();
-        ctx.moveTo(myArray[1], myArray[2]);
-        ctx.lineTo(myArray[3], myArray[4]);
-        // Draw the Path
-        ctx.stroke();
-      } else {
-          console.log(myArray)
-      }
-  }
-    eventSource.onerror = (err) => {
-        console.error("EventSource failed:", err);
-    };
-}
+                ctx.beginPath();
+                ctx.moveTo(myArray[1], myArray[2]);
+                ctx.lineTo(myArray[3], myArray[4]);
+                // Draw the Path
+                ctx.stroke();
+            } else {
+                console.log(myArray)
+            }
+        }
+        eventSource.onerror = (err) => {
+            console.error("EventSource failed:", err);
+        };
+    }
 
-// doit()
-function send(){
-    fetch('/send', {method:"POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: document.getElementById("cmd").value }) })
-}
-    </script>
-    <body>
+    // doit()
+    function send() {
+        fetch('/send', {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({data: document.getElementById("cmd").value})
+        })
+    }
+</script>
+<body>
 
-    <div class="lg:content-auto">
-        <h1 class="text-3xl font-bold underline text-clifford">
-            Hello world!
-        </h1>
-        <div hx-sse="connect:/chunk swap:update">
-            <div hx-trigger="sse:new_news" hx-get="/chunk"></div>
+<div class="lg:content-auto">
+    <h1 class="text-3xl font-bold underline text-clifford">
+        Hello world!
+    </h1>
+    <div id="json_target" hx-sse="connect:/chunk swap:update">
+    </div>
+    <canvas id="canvas" width="500px" height="500px"></canvas>
+
+    <div class="ui left corner labeled input">
+
+        <input id="cmd"/>
+        <div class="ui left corner label">
+            <i class="asterisk icon"></i>
         </div>
-        <canvas id="canvas" width="500px" height="500px"></canvas>
-
-        <div class="ui left corner labeled input">
-
-            <input id="cmd" />
-            <div class="ui left corner label">
-                <i class="asterisk icon"></i>
+        <input class="ui button" type="submit" onclick="send();">
     </div>
-    <input class="ui button" type="submit" onclick="send();">
-    </div>
-    </body>
+</div>
+<script>
+    // select the target node
+    var target = document.querySelector('#json_target');
+
+    // create an observer instance
+    var observer = new MutationObserver(function (mutations) {
+        const html = document.querySelector('#json_target').innerHTML;
+        const layout = JSON.parse(html);
+        const blocks = Object.entries(layout.Blocks);
+        const switches = Object.entries(layout.TrackSwitches);
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let [key, value] of blocks) {
+            const segments = value.Segments;
+            for (const segment of segments) {
+                const line = segment;
+
+                ctx.beginPath();
+                ctx.lineWidth = 5;
+
+                if (line.Enabled) {
+                    ctx.strokeStyle = "red";
+                } else {
+                    ctx.strokeStyle = "black";
+                }
+                ctx.moveTo(line.StartX, line.StartY);
+                ctx.lineTo(line.EndX, line.EndY);
+                // Draw the Path
+                ctx.stroke();
+                // console.log(line);
+            }
+        }
+
+        let i = 1
+        for (let [key, value] of switches) {
+            console.log(value)
+            ctx.beginPath();
+            ctx.strokeStyle = "blue";
+            ctx.arc(50 * i++, 100, 15, 0, Math.PI*2, false);
+            ctx.fill();
+        }
+    });
+    function getCursorPosition(canvas, event) {
+        const rect = canvas.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        console.log("x: " + x + " y: " + y)
+    }
+
+    const canvas = document.querySelector('#canvas')
+    canvas.addEventListener('mousedown', function(e) {
+        getCursorPosition(canvas, e)
+    })
+
+    // configuration of the observer:
+    var config = {attributes: false, childList: true, characterData: false};
+
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config);
+
+    // later, you can stop observing
+    // observer.disconnect();
+</script>
+</body>
 </html>
