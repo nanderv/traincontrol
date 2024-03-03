@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -46,11 +47,12 @@ func NewRouter() *MessageRouter {
 	}
 }
 
-func RouteWithMessageRouter(router *MessageRouter) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		c := router.Subscribe()
-		defer router.Unsubscribe(c)
+func RouteWithMessageRouter(router *MessageRouter) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cha := router.Subscribe()
+		defer router.Unsubscribe(cha)
 
+		w := c.Response().Writer
 		flusher, ok := w.(http.Flusher)
 
 		if !ok {
@@ -65,13 +67,13 @@ func RouteWithMessageRouter(router *MessageRouter) func(w http.ResponseWriter, r
 		w.Header().Set("Transfer-Encoding", "chunked")
 		for {
 			select {
-			case t := <-*c:
+			case t := <-*cha:
 				_, _ = fmt.Fprintln(w, "event: update")
 				_, _ = fmt.Fprintf(w, "data: %s\n\n", t)
 
 				flusher.Flush()
-			case <-r.Context().Done():
-				return
+			case <-c.Request().Context().Done():
+				return nil
 			}
 		}
 	}
