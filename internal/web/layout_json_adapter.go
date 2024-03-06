@@ -10,21 +10,21 @@ import (
 	"log/slog"
 )
 
-type LayoutAdapter struct {
+type LayoutJSONAdapter struct {
 	c  *traintracks.TrackService
 	ch *chan domain.Layout
 	h  io.Writer
 }
 
-func NewLayoutAdapter(c *traintracks.TrackService, h io.Writer) *LayoutAdapter {
-	return &LayoutAdapter{
+func NewLayoutJSONAdapter(c *traintracks.TrackService, h io.Writer) *LayoutJSONAdapter {
+	return &LayoutJSONAdapter{
 		c:  c,
 		ch: c.AddNewReturnChannel(),
 		h:  h,
 	}
 }
 
-func (l *LayoutAdapter) Handle(ctx context.Context) {
+func (l *LayoutJSONAdapter) Handle(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -48,7 +48,7 @@ type setSwitchInput struct {
 	Direction bool   `json:"direction"`
 }
 
-func (l *LayoutAdapter) SetSwitch(c echo.Context) error {
+func (l *LayoutJSONAdapter) SetSwitch(c echo.Context) error {
 	input := setSwitchInput{}
 
 	err := json.NewDecoder(c.Request().Body).Decode(&input)

@@ -228,7 +228,7 @@ func main() {
 	})
 	c, err := traintracks.NewTrackService(lay)
 
-	b := bridge.NewSerialBridge()
+	b := bridge.NewFakeBridge()
 
 	traintracks2.NewMessageAdapter(c, b)
 
