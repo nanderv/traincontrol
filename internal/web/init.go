@@ -15,11 +15,16 @@ func Init(ctx context.Context, c *traintracks.TrackService) error {
 
 	// Add route for getting chunked data
 	rt := NewRouter()
-	lad := NewLayoutAdapter(c, rt)
+	lad := NewLayoutJSONAdapter(c, rt)
 	go lad.Handle(ctx)
 
-	e.POST("/switchSet", lad.SetSwitch)
+	rt2 := NewRouter()
+	lad2 := NewLayoutHTTP(c, rt2)
+	go lad2.Handle(ctx)
+
+	e.POST("/switchSet", lad2.SetSwitch)
 	e.GET("/chunk", RouteWithMessageRouter(rt))
+	e.GET("/chunkHTML", RouteWithMessageRouter(rt2))
 	// Start the server
 
 	return e.Start(":9898")
