@@ -42,28 +42,45 @@ void writeMessageToAllBut(int dest, messageSlot *msg) {
 bool readMessage(int comNR) {
   messageSlot *slot = &(comms[comNR].incomingMessage);
   byte checkByte = 0;
-  if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->type)) {
+  byte b1 = comms[comNR].read();
+  if (toHex(b1) == 128){
+      return false;
+  }
+  byte b2 = comms[comNR].read();
+    if (toHex(b2) == 128){
+        return false;
+    }
+    if (!toHexDuo(b1, b2, &slot->type)) {
     return false;
   }
   checkByte = slot->type;
 
   for (int i = 0; i < MSG_LENGTH; i++) {
-    if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->content[i])) {
+      b1 = comms[comNR].read();
+      if (toHex(b1) == 128){
+          return false;
+      }
+      b2 = comms[comNR].read();
+      if (toHex(b2) == 128){
+          return false;
+      }
+    if (!toHexDuo(b1, b2, &slot->content[i])) {
       return false;
     };
     checkByte = checkByte ^ slot->content[i];
   }
-
-  if (!toHexDuo(comms[comNR].read(), comms[comNR].read(), &slot->checkByte)) {
+    b1 = comms[comNR].read();
+    if (toHex(b1) == 128){
+        return false;
+    }
+    b2 = comms[comNR].read();
+    if (toHex(b2) == 128){
+        return false;
+    }
+  if (!toHexDuo(b1, b2, &slot->checkByte)) {
     return false;
   }
 
-  if (checkByte == slot->checkByte) {
-    digitalWrite(LED_BUILTIN, LOW);
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);
-
-  }
   return checkByte == slot->checkByte;
 }
 
@@ -101,7 +118,7 @@ int coms0Available() {
 
 void coms0Write(char *c, int i) {
   Coms0.write(c, i);
-  Coms0.write("\n");
+  Coms0.println();
 }
 
 byte coms1Read() {
@@ -114,7 +131,7 @@ int coms1Available() {
 
 void coms1Write(char *c, int i) {
   Coms1.write(c, i);
-  Coms1.write("\n");
+    Coms1.println();
 }
 
 byte coms2Read() {
@@ -127,7 +144,7 @@ int coms2Available() {
 
 void coms2Write(char *c, int i) {
   Coms2.write(c, i);
-  Coms2.write("\n");
+    Coms2.println();
 }
 
 byte coms4Read() {
@@ -140,7 +157,7 @@ int coms4Available() {
 
 void coms4Write(char *c, int i) {
   Coms4.write(c, i);
-  Coms4.write("\n");
+Coms4.println();
 }
 
 byte coms5Read() {
@@ -153,7 +170,7 @@ int coms5Available() {
 
 void coms5Write(char *c, int i) {
   Coms5.write(c, i);
-  Coms5.write("\n");
+  Coms5.println();
 }
 
 
