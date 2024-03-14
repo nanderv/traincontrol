@@ -32,14 +32,33 @@ func main() {
 	lay.WithTrackSwitch(domain2.TrackSwitch{
 		Mac:       domain.Mac{20, 141, 142},
 		PortID:    0,
-		LeftPin:   4,
-		RightPin:  5,
+		LeftPin:   13,
+		RightPin:  13,
+		Name:      "b",
+		Direction: false,
+		X:         250,
+		Y:         400,
+	})
+	lay.WithTrackSwitch(domain2.TrackSwitch{
+		Mac:       domain.Mac{20, 140, 204},
+		PortID:    0,
+		LeftPin:   13,
+		RightPin:  13,
 		Name:      "sl",
 		Direction: false,
 		X:         450,
 		Y:         400,
 	})
-
+	lay.WithTrackSwitch(domain2.TrackSwitch{
+		Mac:       domain.Mac{22, 229, 217},
+		PortID:    0,
+		LeftPin:   13,
+		RightPin:  13,
+		Name:      "sl2",
+		Direction: false,
+		X:         450,
+		Y:         350,
+	})
 	lay.WithBlock(domain2.Block{
 		Name: "forest_to_shadow",
 		Segments: []domain2.Segment{
@@ -228,7 +247,7 @@ func main() {
 	})
 	c, err := traintracks.NewTrackService(lay)
 
-	b := bridge.NewFakeBridge()
+	b := bridge.NewSerialBridge()
 
 	traintracks2.NewMessageAdapter(c, b)
 
