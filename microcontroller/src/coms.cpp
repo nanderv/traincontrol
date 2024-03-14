@@ -41,9 +41,9 @@ void writeMessageToAllBut(int dest, messageSlot *msg) {
 // True if finished, otherwise false.
 bool readMessage(int comNR) {
   messageSlot *slot = &(comms[comNR].incomingMessage);
-  byte checkByte = 0;
   byte b1 = comms[comNR].read();
   if (toHex(b1) == 128){
+      Serial.println(b1);
       return false;
   }
   byte b2 = comms[comNR].read();
@@ -53,7 +53,7 @@ bool readMessage(int comNR) {
     if (!toHexDuo(b1, b2, &slot->type)) {
     return false;
   }
-  checkByte = slot->type;
+  byte checkByte = slot->type;
 
   for (int i = 0; i < MSG_LENGTH; i++) {
       b1 = comms[comNR].read();
@@ -101,9 +101,6 @@ void handleChannel(int i) {
           }
         }
       }
-      while (comms[i].available()) {
-        comms[i].read();
-      }
     }
   }
 }
@@ -118,7 +115,7 @@ int coms0Available() {
 
 void coms0Write(char *c, int i) {
   Coms0.write(c, i);
-  Coms0.println();
+  Coms0.print("\n");
 }
 
 byte coms1Read() {
@@ -131,7 +128,7 @@ int coms1Available() {
 
 void coms1Write(char *c, int i) {
   Coms1.write(c, i);
-    Coms1.println();
+    Coms1.print("\n");
 }
 
 byte coms2Read() {
@@ -144,7 +141,7 @@ int coms2Available() {
 
 void coms2Write(char *c, int i) {
   Coms2.write(c, i);
-    Coms2.println();
+    Coms2.print("\n");
 }
 
 byte coms4Read() {
@@ -157,7 +154,7 @@ int coms4Available() {
 
 void coms4Write(char *c, int i) {
   Coms4.write(c, i);
-Coms4.println();
+    Coms4.print("\n");
 }
 
 byte coms5Read() {
@@ -170,7 +167,7 @@ int coms5Available() {
 
 void coms5Write(char *c, int i) {
   Coms5.write(c, i);
-  Coms5.println();
+    Coms5.print("\n");
 }
 
 
