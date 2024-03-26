@@ -2,27 +2,27 @@ package domain
 
 import (
 	"errors"
-	bridgeDomain "github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	bridgeDomain "github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
 	"log/slog"
 )
 
-type Layout struct {
+type HardwareState struct {
 	TrackSwitches map[string]*TrackSwitch
 	Blocks        map[string]*Block
 }
 
-func NewLayout() Layout {
-	l := Layout{
+func NewHardwareState() HardwareState {
+	l := HardwareState{
 		TrackSwitches: make(map[string]*TrackSwitch),
 		Blocks:        make(map[string]*Block),
 	}
 	return l
 }
-func (l *Layout) WithTrackSwitch(t TrackSwitch) {
+func (l *HardwareState) WithTrackSwitch(t TrackSwitch) {
 	l.TrackSwitches[t.Name] = &t
 }
 
-func (l *Layout) WithBlock(b Block) {
+func (l *HardwareState) WithBlock(b Block) {
 	l.Blocks[b.Name] = &b
 }
 
@@ -30,26 +30,21 @@ type TrackSwitch struct {
 	//
 	Mac bridgeDomain.Mac
 
-	PortID   byte
-	LeftPin  byte
-	RightPin byte
-
-	Name string
-
+	PortID    byte
+	LeftPin   byte
+	RightPin  byte
 	Direction bool
-
-	X int
-	Y int
+	Name      string
 }
 
-func (l *Layout) GetSwitch(id string) (*TrackSwitch, error) {
+func (l *HardwareState) GetSwitch(id string) (*TrackSwitch, error) {
 	t, ok := l.TrackSwitches[id]
 	if !ok {
 		return nil, errors.New("could not find switch for return")
 	}
 	return t, nil
 }
-func (l *Layout) GetSwitchFromHWIDs(mac bridgeDomain.Mac, portID byte, pinID byte) (*TrackSwitch, error) {
+func (l *HardwareState) GetSwitchFromHWIDs(mac bridgeDomain.Mac, portID byte, pinID byte) (*TrackSwitch, error) {
 	for _, sw := range l.TrackSwitches {
 		if sw.Mac == mac && sw.PortID == portID && (sw.LeftPin == pinID || sw.RightPin == pinID) {
 			return sw, nil

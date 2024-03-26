@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware"
 )
 
-func Init(ctx context.Context, c *traintracks.TrackService) error {
+func Init(ctx context.Context, c *hardware.TrackService) error {
 	// Add file server
 	e := echo.New()
 	e.Use(middleware.Logger())
