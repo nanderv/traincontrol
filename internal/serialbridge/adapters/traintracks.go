@@ -43,7 +43,7 @@ func (adapt *MessageAdapter) SetSwitchDirection(t *domain2.TrackSwitch, dir bool
 		return m.Type == domain.SwitchResult && m.Val == msg.Val
 	}
 
-	requestTimeout := 600 * time.Millisecond
-	retries := 3
+	requestTimeout := 1000 * time.Millisecond
+	retries := 10
 	return adapt.sender.SendWithResponseChecksAndRetries(msg, responseChecker, requestTimeout, retries)
 }
