@@ -18,8 +18,13 @@ func (f *FakeBridge) AddReceiver(r MessageReceiver) {
 func (f *FakeBridge) Send(m domain.Msg) error {
 	slog.Info("OUTBOUND", "message", m)
 	msg := m
-	if m.Type == 2 {
-		msg.Type = 3
+	switch m.Type {
+	case domain.SwitchSet:
+		msg.Type = domain.SwitchResult
+	case domain.SectorSet:
+		msg.Type = domain.SectorResult
+	default:
+		return nil
 	}
 
 	go func() {
@@ -38,6 +43,7 @@ func (f *FakeBridge) SendWithResponseChecksAndRetries(msg domain.Msg, _ func(msg
 }
 func NewFakeBridge() *FakeBridge {
 	bridge := FakeBridge{}
+	slog.Info("Operating using fake bridge")
 	return &bridge
 }
 
