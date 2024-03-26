@@ -7,23 +7,17 @@ import (
 )
 
 type HardwareState struct {
-	TrackSwitches map[string]*TrackSwitch
-	Blocks        map[string]*Block
+	TrackSwitches []*TrackSwitch
 }
 
 func NewHardwareState() HardwareState {
 	l := HardwareState{
-		TrackSwitches: make(map[string]*TrackSwitch),
-		Blocks:        make(map[string]*Block),
+		TrackSwitches: make([]*TrackSwitch, 0),
 	}
 	return l
 }
 func (l *HardwareState) WithTrackSwitch(t TrackSwitch) {
-	l.TrackSwitches[t.Name] = &t
-}
-
-func (l *HardwareState) WithBlock(b Block) {
-	l.Blocks[b.Name] = &b
+	l.TrackSwitches = append(l.TrackSwitches, &t)
 }
 
 type TrackSwitch struct {
@@ -38,11 +32,14 @@ type TrackSwitch struct {
 }
 
 func (l *HardwareState) GetSwitch(id string) (*TrackSwitch, error) {
-	t, ok := l.TrackSwitches[id]
-	if !ok {
-		return nil, errors.New("could not find switch for return")
+	for _, ts := range l.TrackSwitches {
+		if ts.Name == id {
+			return ts, nil
+		}
 	}
-	return t, nil
+
+	return nil, errors.New("could not find switch for return")
+
 }
 func (l *HardwareState) GetSwitchFromHWIDs(mac bridgeDomain.Mac, portID byte, pinID byte) (*TrackSwitch, error) {
 	for _, sw := range l.TrackSwitches {
