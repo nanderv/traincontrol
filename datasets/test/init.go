@@ -12,7 +12,7 @@ func GetBaseLayout() hwDomain.HardwareState {
 		PortID:    0,
 		LeftPin:   2,
 		RightPin:  3,
-		Name:      "1",
+		Name:      "Forest",
 		Direction: false,
 	})
 	lay.WithTrackSwitch(hwDomain.TrackSwitch{
@@ -20,7 +20,7 @@ func GetBaseLayout() hwDomain.HardwareState {
 		PortID:    0,
 		LeftPin:   13,
 		RightPin:  14,
-		Name:      "b",
+		Name:      "Shadow Left",
 		Direction: false,
 	})
 	lay.WithTrackSwitch(hwDomain.TrackSwitch{
@@ -28,7 +28,7 @@ func GetBaseLayout() hwDomain.HardwareState {
 		PortID:    0,
 		LeftPin:   15,
 		RightPin:  16,
-		Name:      "sl",
+		Name:      "Shadow Right",
 		Direction: false,
 	})
 	lay.WithTrackSwitch(hwDomain.TrackSwitch{
@@ -36,7 +36,7 @@ func GetBaseLayout() hwDomain.HardwareState {
 		PortID:    0,
 		LeftPin:   13,
 		RightPin:  14,
-		Name:      "sl2",
+		Name:      "Loco",
 		Direction: false,
 	})
 	lay.WithBlock(hwDomain.Block{
