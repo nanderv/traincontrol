@@ -26,6 +26,7 @@ func (f *FakeBridge) Send(m domain.Msg) error {
 	default:
 		return nil
 	}
+	slog.Info("INBOUND", "message", m)
 
 	go func() {
 		for _, r := range f.Returner {

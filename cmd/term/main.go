@@ -16,8 +16,9 @@ type NulWriter struct {
 }
 
 func (w *NulWriter) Write(b []byte) (int, error) {
-	go func() { *w.Res <- string(b) }()
-	return len(b), nil
+	bb := string(b)
+	go func() { *w.Res <- bb }()
+	return len(bb), nil
 }
 func main() {
 	nw := NulWriter{}
