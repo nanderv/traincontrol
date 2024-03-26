@@ -6,6 +6,7 @@ require (
 	github.com/a-h/templ v0.2.543
 	github.com/dsyx/serialport-go v1.0.0
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1
 
 )
 
@@ -18,7 +19,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

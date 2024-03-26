@@ -43,22 +43,24 @@ func main() {
 	buttons := make(map[string]*tview.Button)
 	for _, sw := range lay.TrackSwitches {
 		s := sw
-		but := tview.NewButton(fmt.Sprintf("ST %s %v", s.Name, s.Direction))
-		fmt.Println(but)
+		form.AddButton(sw.Name, func() {
+			c.SetSwitchDirection(s.Name, !lay.TrackSwitches[s.Name].Direction)
+		})
+		but := form.GetButton(form.GetButtonIndex(sw.Name))
+
 		buttons[s.Name] = but
+
 	}
 	go func() {
-		select {
-		case sta := <-*cha:
-			lay = sta
-			i := 0
-			for _, sw := range sta.TrackSwitches {
-				s := sw
+		for {
+			select {
+			case sta := <-*cha:
+				for _, sw := range sta.TrackSwitches {
+					buttons[sw.Name].SetLabel(fmt.Sprintf("S %s %v", sw.Name, sw.Direction))
 
-				form.GetButton(i).SetLabel(fmt.Sprintf("ST %s %v", s.Name, s.Direction))
-
-				i++
+				}
 			}
+			app.ForceDraw()
 		}
 	}()
 	form.SetBorder(true).SetTitle("Enter some data").SetTitleAlign(tview.AlignLeft)
