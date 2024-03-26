@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge"
-	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	domain2 "github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware"
+	hwDomain "github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/serialbridge"
+	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/serialbridge/adapters"
+	"github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/web"
 	"log/slog"
 	"os"
@@ -15,55 +16,45 @@ import (
 	"syscall"
 )
 
-func main() {
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-
-	lay := domain2.NewLayout()
-	lay.WithTrackSwitch(domain2.TrackSwitch{
+func getBaseLayout() hwDomain.HardwareState {
+	lay := hwDomain.NewHardwareState()
+	lay.WithTrackSwitch(hwDomain.TrackSwitch{
 		Mac:       domain.Mac{20, 141, 142},
 		PortID:    0,
 		LeftPin:   2,
 		RightPin:  3,
 		Name:      "1",
 		Direction: false,
-		X:         200,
-		Y:         400,
 	})
-	lay.WithTrackSwitch(domain2.TrackSwitch{
+	lay.WithTrackSwitch(hwDomain.TrackSwitch{
 		Mac:       domain.Mac{20, 141, 142},
 		PortID:    0,
 		LeftPin:   13,
 		RightPin:  13,
 		Name:      "b",
 		Direction: false,
-		X:         250,
-		Y:         400,
 	})
-	lay.WithTrackSwitch(domain2.TrackSwitch{
+	lay.WithTrackSwitch(hwDomain.TrackSwitch{
 		Mac:       domain.Mac{20, 140, 204},
 		PortID:    0,
 		LeftPin:   13,
 		RightPin:  13,
 		Name:      "sl",
 		Direction: false,
-		X:         450,
-		Y:         400,
 	})
-	lay.WithTrackSwitch(domain2.TrackSwitch{
+	lay.WithTrackSwitch(hwDomain.TrackSwitch{
 		Mac:       domain.Mac{22, 229, 217},
 		PortID:    0,
 		LeftPin:   13,
 		RightPin:  13,
 		Name:      "sl2",
 		Direction: false,
-		X:         450,
-		Y:         350,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "forest_to_shadow",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 170,
 					StartY: 400,
 					EndX:   200,
@@ -72,7 +63,7 @@ func main() {
 				Enabled: true,
 			},
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 170,
 					StartY: 380,
 					EndX:   200,
@@ -81,7 +72,7 @@ func main() {
 				Enabled: false,
 			},
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 200,
 					StartY: 400,
 					EndX:   400,
@@ -94,12 +85,12 @@ func main() {
 		Enabled: false,
 	})
 
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "forest_siding",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 110,
 					StartY: 340,
 					EndX:   167,
@@ -111,12 +102,12 @@ func main() {
 
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "forest_curve",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 110,
 					StartY: 400,
 					EndX:   167,
@@ -129,12 +120,12 @@ func main() {
 		Enabled: false,
 	})
 
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "forest_to_main",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 50,
 					StartY: 400,
 					EndX:   107,
@@ -146,12 +137,12 @@ func main() {
 
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "shadow_left",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 410,
 					StartY: 400,
 					EndX:   450,
@@ -160,7 +151,7 @@ func main() {
 				Enabled: true,
 			},
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 450,
 					StartY: 400,
 					EndX:   480,
@@ -169,7 +160,7 @@ func main() {
 				Enabled: true,
 			},
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 450,
 					StartY: 400,
 					EndX:   480,
@@ -181,12 +172,12 @@ func main() {
 
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "shadow_top_l",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 483,
 					StartY: 370,
 					EndX:   557,
@@ -197,12 +188,12 @@ func main() {
 		},
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "shadow_bottom_l",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 483,
 					StartY: 400,
 					EndX:   557,
@@ -213,12 +204,12 @@ func main() {
 		},
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "shadow_top_r",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 560,
 					StartY: 370,
 					EndX:   634,
@@ -229,12 +220,12 @@ func main() {
 		},
 		Enabled: false,
 	})
-	lay.WithBlock(domain2.Block{
+	lay.WithBlock(hwDomain.Block{
 		Name: "shadow_bottom_r",
-		Segments: []domain2.Segment{
+		Segments: []hwDomain.Segment{
 
 			{
-				Line: domain2.Line{
+				Line: hwDomain.Line{
 					StartX: 560,
 					StartY: 400,
 					EndX:   634,
@@ -245,10 +236,26 @@ func main() {
 		},
 		Enabled: false,
 	})
-	c, err := traintracks.NewTrackService(lay)
 
-	b := bridge.NewSerialBridge()
+	return lay
+}
+func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	brdg := "fake"
+	flag.StringVar(&brdg, "bridge", "fake", "Set which hardware brdige to use (fake or serial)")
+	if brdg != "fake" && brdg != "serial" {
+		panic("Bridge ain't real")
+	}
 
+	c, err := hardware.NewTrackService(getBaseLayout())
+
+	var b serialbridge.Bridge
+	if brdg == "fake" {
+		b = serialbridge.NewFakeBridge()
+	}
+	if brdg == "serial" {
+		b = serialbridge.NewSerialBridge()
+	}
 	traintracks2.NewMessageAdapter(c, b)
 
 	if err != nil {

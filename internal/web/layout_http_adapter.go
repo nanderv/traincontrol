@@ -5,19 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
 	"io"
 	"log/slog"
 )
 
 type LayoutHTTPAdapter struct {
-	c  *traintracks.TrackService
-	ch *chan domain.Layout
+	c  *hardware.TrackService
+	ch *chan domain.HardwareState
 	h  io.Writer
 }
 
-func NewLayoutHTTP(c *traintracks.TrackService, h io.Writer) *LayoutHTTPAdapter {
+func NewLayoutHTTP(c *hardware.TrackService, h io.Writer) *LayoutHTTPAdapter {
 	return &LayoutHTTPAdapter{
 		c:  c,
 		ch: c.AddNewReturnChannel(),
@@ -32,14 +32,15 @@ func (l *LayoutHTTPAdapter) Handle(ctx context.Context) {
 			return
 		case d := <-*l.ch:
 			html := ""
+			i := 0
 			for _, y := range d.TrackSwitches {
 				var dir = "-"
 				if y.Direction {
 					dir = "x"
 				}
-
+				i += 1
 				html +=
-					fmt.Sprintf(`<div style="position:absolute; left: %vpx; top: %vpx; border: 3px solid #73AD21;" onClick="btn('%s', %v)">%s</div>`, y.X, y.Y, y.Name, !y.Direction, dir)
+					fmt.Sprintf(`<div style="position:absolute; left: %vpx; top: %vpx; border: 3px solid #73AD21;" onClick="btn('%s', %v)">%s</div>`, 50*i, 100, y.Name, !y.Direction, dir)
 			}
 			//panic("disco")
 			//html = "<div>" + html + "</div>"
