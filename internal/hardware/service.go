@@ -1,18 +1,18 @@
-package traintracks
+package hardware
 
 import (
-	domain2 "github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
+	domain2 "github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
 	"time"
 )
 
 type TrackService struct {
 	layoutBridge         Sender
-	notifyChangeChannels []*chan domain2.Layout
-	Layout               domain2.Layout
+	notifyChangeChannels []*chan domain2.HardwareState
+	Layout               domain2.HardwareState
 }
 
-func (svc *TrackService) AddNewReturnChannel() *chan domain2.Layout {
-	ch := make(chan domain2.Layout)
+func (svc *TrackService) AddNewReturnChannel() *chan domain2.HardwareState {
+	ch := make(chan domain2.HardwareState)
 	svc.notifyChangeChannels = append(svc.notifyChangeChannels, &ch)
 	return &ch
 }
@@ -22,7 +22,7 @@ func (svc *TrackService) SetLayoutSender(cc Sender) {
 	return
 }
 
-func NewTrackService(lay domain2.Layout) (*TrackService, error) {
+func NewTrackService(lay domain2.HardwareState) (*TrackService, error) {
 	c := TrackService{}
 	c.Layout = lay
 	go c.notifyEveryOnce()

@@ -4,19 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/labstack/echo/v4"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks"
-	"github.com/nanderv/traincontrol-prototype/internal/traintracks/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
 	"io"
 	"log/slog"
 )
 
 type LayoutJSONAdapter struct {
-	c  *traintracks.TrackService
-	ch *chan domain.Layout
+	c  *hardware.TrackService
+	ch *chan domain.HardwareState
 	h  io.Writer
 }
 
-func NewLayoutJSONAdapter(c *traintracks.TrackService, h io.Writer) *LayoutJSONAdapter {
+func NewLayoutJSONAdapter(c *hardware.TrackService, h io.Writer) *LayoutJSONAdapter {
 	return &LayoutJSONAdapter{
 		c:  c,
 		ch: c.AddNewReturnChannel(),

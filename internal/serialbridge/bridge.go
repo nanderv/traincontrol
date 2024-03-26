@@ -1,10 +1,10 @@
-package bridge
+package serialbridge
 
 import (
 	"errors"
 	"fmt"
 	"github.com/dsyx/serialport-go"
-	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
 	"log/slog"
 	"sync"
 	"time"
@@ -23,7 +23,7 @@ type SerialBridge struct {
 
 var ports = []string{"/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2"}
 
-// NewSerialBridge sets up a Serial bridge, based on three standard ports that are used on a lot of linux machines.
+// NewSerialBridge sets up a Serial serialbridge, based on three standard ports that are used on a lot of linux machines.
 func NewSerialBridge() *SerialBridge {
 	var port *serialport.SerialPort
 
