@@ -19,18 +19,25 @@ func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	brdg := "fake"
 	flag.StringVar(&brdg, "bridge", "fake", "Set which hardware brdige to use (fake or serial)")
+
+	layStr := "test"
+	flag.StringVar(&layStr, "layout", "test", "Set which layout to use")
+	flag.Parse()
+
 	if brdg != "fake" && brdg != "serial" {
 		panic("Bridge ain't real")
 	}
-	layStr := "test"
-	flag.StringVar(&layStr, "layout", "test", "Set which layout to use")
-	c, err := hardware.NewTrackService(test.GetBaseLayout())
+
+	hw, _ := test.GetBaseLayout()
+	c, err := hardware.NewTrackService(hw)
 
 	var b serialbridge.Bridge
+	fmt.Println(brdg)
 	if brdg == "fake" {
 		b = serialbridge.NewFakeBridge()
 	}
 	if brdg == "serial" {
+		fmt.Println("HI")
 		b = serialbridge.NewSerialBridge()
 	}
 	traintracks2.NewMessageAdapter(c, b)
