@@ -34,7 +34,7 @@ func (r *MessageRouter) Write(in []byte) (int, error) {
 	r.RLock()
 	defer r.RUnlock()
 
-	for c, _ := range r.channelMap {
+	for c := range r.channelMap {
 		*c <- in
 	}
 	return len(in), nil
