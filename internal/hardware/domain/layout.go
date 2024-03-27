@@ -2,7 +2,7 @@ package domain
 
 import (
 	"errors"
-	bridgeDomain "github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
+	bridgeDomain "github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
 )
 

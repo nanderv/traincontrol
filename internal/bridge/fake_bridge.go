@@ -1,7 +1,7 @@
-package serialbridge
+package bridge
 
 import (
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"log/slog"
 	"time"
 )

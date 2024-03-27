@@ -1,9 +1,9 @@
 package test
 
 import (
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	hwDomain "github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
 	layoutDomain "github.com/nanderv/traincontrol-prototype/internal/layout/domain"
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
 )
 
 func GetBaseLayout() (hwDomain.HardwareState, layoutDomain.Layout) {

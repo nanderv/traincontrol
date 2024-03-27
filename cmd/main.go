@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/datasets/test"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/hardware"
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge"
-	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/serialbridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/web"
 	"log/slog"
 	"os"
@@ -31,14 +31,14 @@ func main() {
 	hw, _ := test.GetBaseLayout()
 	c, err := hardware.NewTrackService(hw)
 
-	var b serialbridge.Bridge
+	var b bridge.Bridge
 	fmt.Println(brdg)
 	if brdg == "fake" {
-		b = serialbridge.NewFakeBridge()
+		b = bridge.NewFakeBridge()
 	}
 	if brdg == "serial" {
 		fmt.Println("HI")
-		b = serialbridge.NewSerialBridge()
+		b = bridge.NewSerialBridge()
 	}
 	traintracks2.NewMessageAdapter(c, b)
 

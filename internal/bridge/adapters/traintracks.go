@@ -1,19 +1,19 @@
 package adapters
 
 import (
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/hardware"
 	domain2 "github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge"
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge/domain"
 	"time"
 )
 
 type MessageAdapter struct {
 	trackService *hardware.TrackService
-	sender       serialbridge.Bridge
+	sender       bridge.Bridge
 }
 
-func NewMessageAdapter(svc *hardware.TrackService, bridge serialbridge.Bridge) *MessageAdapter {
+func NewMessageAdapter(svc *hardware.TrackService, bridge bridge.Bridge) *MessageAdapter {
 	m := MessageAdapter{trackService: svc, sender: bridge}
 	svc.SetLayoutSender(&m)
 	bridge.AddReceiver(&m)

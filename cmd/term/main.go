@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/datasets/test"
+	"github.com/nanderv/traincontrol-prototype/internal/bridge"
+	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/hardware"
-	"github.com/nanderv/traincontrol-prototype/internal/serialbridge"
-	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/serialbridge/adapters"
 	"github.com/rivo/tview"
 	"log/slog"
 )
@@ -42,12 +42,12 @@ func main() {
 		panic(err)
 	}
 
-	var b serialbridge.Bridge
+	var b bridge.Bridge
 	if brdg == "fake" {
-		b = serialbridge.NewFakeBridge()
+		b = bridge.NewFakeBridge()
 	}
 	if brdg == "serial" {
-		b = serialbridge.NewSerialBridge()
+		b = bridge.NewSerialBridge()
 	}
 	traintracks2.NewMessageAdapter(c, b)
 
