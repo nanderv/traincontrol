@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/nanderv/traincontrol-prototype/datasets/test"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge"
-	traintracks2 "github.com/nanderv/traincontrol-prototype/internal/bridge/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/hardware"
+	bridgeAdapter "github.com/nanderv/traincontrol-prototype/internal/hardware/adapters"
 	"github.com/nanderv/traincontrol-prototype/internal/web"
 	"log/slog"
 	"os"
@@ -31,7 +31,7 @@ func main() {
 	hw, _ := test.GetBaseLayout()
 	c, err := hardware.NewTrackService(hw)
 
-	var b bridge.Bridge
+	var b bridgeAdapter.Bridge
 	fmt.Println(brdg)
 	if brdg == "fake" {
 		b = bridge.NewFakeBridge()
@@ -40,7 +40,7 @@ func main() {
 		fmt.Println("HI")
 		b = bridge.NewSerialBridge()
 	}
-	traintracks2.NewMessageAdapter(c, b)
+	bridgeAdapter.NewAdapter(c, b)
 
 	if err != nil {
 		return

@@ -2,16 +2,17 @@ package bridge
 
 import (
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware/adapters"
 	"log/slog"
 	"time"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type FakeBridge struct {
-	Returner []MessageReceiver
+	Returner []adapters.MessageReceiver
 }
 
-func (f *FakeBridge) AddReceiver(r MessageReceiver) {
+func (f *FakeBridge) AddReceiver(r adapters.MessageReceiver) {
 	f.Returner = append(f.Returner, r)
 }
 

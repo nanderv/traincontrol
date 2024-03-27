@@ -1,27 +1,36 @@
 package adapters
 
 import (
-	"github.com/nanderv/traincontrol-prototype/internal/bridge"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
 	"github.com/nanderv/traincontrol-prototype/internal/hardware"
 	domain2 "github.com/nanderv/traincontrol-prototype/internal/hardware/domain"
 	"time"
 )
 
-type MessageAdapter struct {
-	trackService *hardware.TrackService
-	sender       bridge.Bridge
+type MessageReceiver interface {
+	Receive(msg domain.Msg) error
 }
 
-func NewMessageAdapter(svc *hardware.TrackService, bridge bridge.Bridge) *MessageAdapter {
-	m := MessageAdapter{trackService: svc, sender: bridge}
+type Bridge interface {
+	AddReceiver(MessageReceiver)
+	Send(domain.Msg) error
+	SendWithResponseChecksAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error
+}
+
+type Adapter struct {
+	trackService *hardware.TrackService
+	sender       Bridge
+}
+
+func NewAdapter(svc *hardware.TrackService, bridge Bridge) *Adapter {
+	m := Adapter{trackService: svc, sender: bridge}
 	svc.SetLayoutSender(&m)
 	bridge.AddReceiver(&m)
 	return &m
 }
 
 // Receive a message from a layout
-func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
+func (adapt *Adapter) Receive(msg domain.Msg) error {
 	switch msg.Type {
 	case domain.HW:
 		return nil
@@ -36,7 +45,7 @@ func (adapt *MessageAdapter) Receive(msg domain.Msg) error {
 	return nil
 }
 
-func (adapt *MessageAdapter) SetSwitchDirection(t *domain2.TrackSwitch, dir bool) error {
+func (adapt *Adapter) SetSwitchDirection(t *domain2.TrackSwitch, dir bool) error {
 	msg := t.SetDirectionCMD(dir)
 
 	responseChecker := func(m domain.Msg) bool {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dsyx/serialport-go"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
+	"github.com/nanderv/traincontrol-prototype/internal/hardware/adapters"
 	"log/slog"
 	"sync"
 	"time"
@@ -14,7 +15,7 @@ import (
 type SerialBridge struct {
 	inboundMutex  sync.RWMutex
 	outboundMutex sync.RWMutex
-	returners     []MessageReceiver
+	returners     []adapters.MessageReceiver
 
 	port         *serialport.SerialPort
 	listeners    map[*chan domain.Msg]struct{}
@@ -46,7 +47,7 @@ func NewSerialBridge() *SerialBridge {
 	return b
 }
 
-func (f *SerialBridge) AddReceiver(r MessageReceiver) {
+func (f *SerialBridge) AddReceiver(r adapters.MessageReceiver) {
 	f.returners = append(f.returners, r)
 }
 
