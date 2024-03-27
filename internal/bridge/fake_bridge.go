@@ -1,19 +1,15 @@
 package bridge
 
 import (
+	"context"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
-	"github.com/nanderv/traincontrol-prototype/internal/hardware/adapters"
 	"log/slog"
 	"time"
 )
 
 // The SerialBridge is responsible for translating commands towards things the railway can understand
 type FakeBridge struct {
-	Returner []adapters.MessageReceiver
-}
-
-func (f *FakeBridge) AddReceiver(r adapters.MessageReceiver) {
-	f.Returner = append(f.Returner, r)
+	broker *Broker[domain.Msg]
 }
 
 func (f *FakeBridge) Send(m domain.Msg) error {
@@ -29,14 +25,7 @@ func (f *FakeBridge) Send(m domain.Msg) error {
 	}
 	slog.Info("INBOUND", "message", m)
 
-	go func() {
-		for _, r := range f.Returner {
-			err := r.Receive(msg)
-			if err != nil {
-				slog.Error("incorrect message", err)
-			}
-		}
-	}()
+	f.broker.Send(msg)
 
 	return nil
 }
@@ -44,11 +33,12 @@ func (f *FakeBridge) SendWithResponseChecksAndRetries(msg domain.Msg, _ func(msg
 	return f.Send(msg)
 }
 func NewFakeBridge() *FakeBridge {
-	bridge := FakeBridge{}
+	bridge := FakeBridge{
+		broker: NewBroker[domain.Msg](),
+	}
 	slog.Info("Operating using fake bridge")
 	return &bridge
 }
-
-func (f *FakeBridge) Handle() {
-	return
+func (f *FakeBridge) AddListener(ctx context.Context) *chan domain.Msg {
+	return f.broker.AddListener(ctx)
 }

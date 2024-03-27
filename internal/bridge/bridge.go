@@ -1,11 +1,11 @@
 package bridge
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/dsyx/serialport-go"
 	"github.com/nanderv/traincontrol-prototype/internal/bridge/domain"
-	"github.com/nanderv/traincontrol-prototype/internal/hardware/adapters"
 	"log/slog"
 	"sync"
 	"time"
@@ -15,10 +15,9 @@ import (
 type SerialBridge struct {
 	inboundMutex  sync.RWMutex
 	outboundMutex sync.RWMutex
-	returners     []adapters.MessageReceiver
 
 	port         *serialport.SerialPort
-	listeners    map[*chan domain.Msg]struct{}
+	broker       *Broker[domain.Msg]
 	outboundChan *chan domain.Msg
 }
 
@@ -40,15 +39,11 @@ func NewSerialBridge() *SerialBridge {
 	}
 
 	cha := make(chan domain.Msg, 10)
-	b := &SerialBridge{port: port, listeners: make(map[*chan domain.Msg]struct{}), outboundChan: &cha}
+	b := &SerialBridge{port: port, outboundChan: &cha, broker: NewBroker[domain.Msg]()}
 
 	go b.IncomingHandler()
 	go b.OutgoingHandler()
 	return b
-}
-
-func (f *SerialBridge) AddReceiver(r adapters.MessageReceiver) {
-	f.returners = append(f.returners, r)
 }
 
 func (f *SerialBridge) Send(m domain.Msg) error {
@@ -125,21 +120,14 @@ func (f *SerialBridge) handleReceivedMessage(msg domain.RawMsg) {
 	}
 
 	slog.Info("message received and sent on", "message", fmt.Sprintf("%v", mm))
-	go func() {
-		for _, r := range f.returners {
-			err = r.Receive(mm)
-			if err != nil {
-				slog.Error("message receiving failed", "err", err, "input", r)
-			}
-		}
-	}()
+	f.broker.Send(mm)
 
-	f.sendToListeners(mm)
 }
 
 func (f *SerialBridge) SendWithResponseChecksAndRetries(msg domain.Msg, checker func(msg domain.Msg) bool, timeout time.Duration, retries int) error {
-	lner := f.addListener()
-	defer f.removeListener(lner)
+	ctx, cancel := context.WithCancel(context.Background())
+	lner := f.AddListener(ctx)
+	defer cancel()
 	for retries > 0 {
 		isConfirmed, err := f.sendMessageWithConfirmation(lner, msg, checker, timeout)
 		if err != nil {
@@ -176,26 +164,6 @@ func (f *SerialBridge) sendMessageWithConfirmation(listener *chan domain.Msg, ms
 	return false, nil
 }
 
-func (f *SerialBridge) addListener() *chan domain.Msg {
-	f.inboundMutex.Lock()
-	defer f.inboundMutex.Unlock()
-
-	ch := make(chan domain.Msg)
-	f.listeners[&ch] = struct{}{}
-	return &ch
-}
-
-func (f *SerialBridge) removeListener(ch *chan domain.Msg) {
-	f.inboundMutex.Lock()
-	defer f.inboundMutex.Unlock()
-
-	delete(f.listeners, ch)
-}
-
-func (f *SerialBridge) sendToListeners(msg domain.Msg) {
-	f.inboundMutex.RLock()
-	defer f.inboundMutex.RUnlock()
-	for lnr := range f.listeners {
-		*lnr <- msg
-	}
+func (f *SerialBridge) AddListener(ctx context.Context) *chan domain.Msg {
+	return f.broker.AddListener(ctx)
 }
