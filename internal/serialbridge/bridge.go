@@ -194,7 +194,7 @@ func (f *SerialBridge) removeListener(ch *chan domain.Msg) {
 func (f *SerialBridge) sendToListeners(msg domain.Msg) {
 	f.inboundMutex.RLock()
 	defer f.inboundMutex.RUnlock()
-	for lnr, _ := range f.listeners {
+	for lnr := range f.listeners {
 		*lnr <- msg
 	}
 }
