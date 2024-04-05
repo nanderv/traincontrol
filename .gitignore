@@ -1,2 +1,9 @@
 .idea/
 .pio/
+main
+
+microcontroller/.pio
+microcontroller/CMakeLists.txt
+microcontroller/CMakeListsPrivate.txt
+microcontroller/cmake-build-*/
+
