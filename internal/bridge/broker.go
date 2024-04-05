@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 )
 
@@ -47,7 +48,7 @@ func (c *client[T]) handle(ctx context.Context, b *Broker[T]) {
 	c.handleLoop(ctx)
 	b.Lock()
 	defer b.Unlock()
-
+	slog.Debug("Cleanup")
 	delete(b.clients, c)
 	// explicit cleanup
 	close(*c.inputChannel)
