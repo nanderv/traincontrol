@@ -26,4 +26,4 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## Authors
 - Nanderv
-- *your name here*
+- Simon Struck
