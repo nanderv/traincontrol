@@ -3,13 +3,15 @@
 #include "coms.h"
 #include "startup.h"
 #include "globals.h"
+#include <EEPROM.h>
 
 
 void setup() {
+    EEPROM.begin(256);
   Coms0.begin(115200);
   Coms1.begin(9600);
   Coms2.begin(9600);
-  Coms5.begin(9600);
+
 //   LoadMemory();
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -36,12 +38,8 @@ void setup() {
   comms[2].read = coms2Read;
   comms[2].inUse = true;
 
-  comms[3].write = coms5Write;
-  comms[3].available = coms5Available;
-  comms[3].read = coms5Read;
-  comms[3].inUse = true;
 }
-
+int avg = 0;
 
 void loop() {
   static int sleepCount;
@@ -56,10 +54,12 @@ void loop() {
   if(sleepCount == 1000){
     digitalWrite(LED_BUILTIN, LOW);
   }
+
   sleepCount++;
   if (sleepCount == 5000){
     sleepCount = 0;
   }
+
   delay(1);
   Serial.flush();
 }
