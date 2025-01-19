@@ -1,65 +1,47 @@
+#define NFC_INTERFACE_HSU
 #include "Arduino.h"
-#include "defines.h"
-#include "coms.h"
-#include "startup.h"
-#include "globals.h"
-#include <EEPROM.h>
+#include <PN532_HSU.h>
+#include <PN532.h>
+#include <HardwareSerial.h>
 
+PN532_HSU pn532hsu(Serial1);
+PN532 nfc(pn532hsu);
 
-void setup() {
-    EEPROM.begin(256);
-  Coms0.begin(115200);
-  Coms1.begin(9600);
-  Coms2.begin(9600);
+void setup(void)
+{
+    delay(2000);
+    nfc.begin();
+    Serial.println("HI");
 
-//   LoadMemory();
+    uint32_t versiondata = nfc.getFirmwareVersion();
+    if (! versiondata) {
+        Serial.print("Didn't find PN53x board");
+        while (1); // halt
+    }
+    Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF);
+    Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF);
+    Serial.print('.'); Serial.println((versiondata>>8) & 0xFF);
 
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);
-
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(12, OUTPUT);
-  comms[0].write = coms0Write;
-  comms[0].available = coms0Available;
-  comms[0].read = coms0Read;
-  comms[0].inUse = true;
-  comms[1].write = coms1Write;
-  comms[1].available = coms1Available;
-  comms[1].read = coms1Read;
-  comms[1].inUse = true;
-  comms[2].write = coms2Write;
-  comms[2].available = coms2Available;
-  comms[2].read = coms2Read;
-  comms[2].inUse = true;
-
+    nfc.setPassiveActivationRetries(0xFF);
 }
-int avg = 0;
 
 void loop() {
-  static int sleepCount;
-  for (int i = 0; i < CHAN_IN_USE; i++) {
-    handleChannel(i);
-  }
-  if(sleepCount ==0){
-    digitalWrite(LED_BUILTIN, HIGH);
-    handleStartState();
-  }
+    readNFC();
+    digitalWrite(ledpin1, HIGH);
+    delay(10);
+    digitalWrite(ledpin1, LOW);
 
-  if(sleepCount == 1000){
-    digitalWrite(LED_BUILTIN, LOW);
-  }
+}
 
-  sleepCount++;
-  if (sleepCount == 5000){
-    sleepCount = 0;
-  }
-
-  delay(1);
-  Serial.flush();
+void readNFC() {
+    if (nfc.tagPresent(100))
+    {
+        NfcTag tag = nfc.read();
+        // tag.print();
+        tagId = tag.getUidString();
+        // Serial.println("Tag id");
+        Serial.println(tagId);
+    } else {
+        Serial.print(".");
+    }
 }

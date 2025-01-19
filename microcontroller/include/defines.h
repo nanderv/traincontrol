@@ -5,6 +5,7 @@
 # define Coms0 Serial
 # define Coms1 Serial1
 # define Coms2 Serial2
+
 # define CHAN_IN_USE 6
 # define ERROR_TYPE 255
 # define DEBUG_SENDBACK false

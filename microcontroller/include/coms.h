@@ -39,6 +39,7 @@ void coms1Write(char *c, int i);
 byte coms2Read();
 int coms2Available();
 void coms2Write(char *c, int i);
+
 char voidRead();
 bool voidAvailable();
 void voidWrite(char *c, int i);
