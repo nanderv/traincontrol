@@ -88,15 +88,9 @@ void handleChannel(int i) {
         if (comms[i].available() >= (2 * (MSG_LENGTH + 2))) {
             while (comms[i].available() >= (2 * (MSG_LENGTH + 2))) {
                 if (readMessage(i)) {
-                    if (comms[i].incomingMessage.type == 0) {
-                        if (handleZeroMode(&comms[i].incomingMessage, &comms[i].outgoingMessage)) {
-                            writeMessageToAllBut(999, &comms[i].outgoingMessage);
-                        }
-                    } else {
                         writeMessageToAllBut(i, &(comms[i].incomingMessage));
                         if (handleMessage(&comms[i].incomingMessage, &comms[i].outgoingMessage)) {
                             writeMessageToAllBut(999, &comms[i].outgoingMessage);
-                        }
                     }
                 }
             }

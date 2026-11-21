@@ -4,7 +4,6 @@
 
 #include "message.h"
 
-bool handleZeroMode(messageSlot *handleMessage, messageSlot *sendBack);
 void handleStartState();
 bool restart(messageSlot *handleMessage, messageSlot *sendBack);
 

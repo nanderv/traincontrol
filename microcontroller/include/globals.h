@@ -7,3 +7,5 @@
 extern byte MAC[3];
 extern comsChannel comms[CHAN_IN_USE];
 #endif //TR_GLOBALS_H
+
+extern char DEVICE_ID; // Declaration only (no initial value)
